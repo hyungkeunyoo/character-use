@@ -115,6 +115,8 @@
     .checkline{display:flex;gap:10px;align-items:flex-start;padding:13px 0;color:#42576a;font-size:13px}
     .checkline input{margin-top:4px}
     .wizard-actions{display:flex;justify-content:space-between;gap:10px;margin-top:24px;padding-top:20px;border-top:1px solid #edf1f4}
+    .wizard-toolbar{display:flex;justify-content:flex-end;margin-bottom:16px}
+    .reset-btn{background:#f3f6f9;color:#526b7f;border:1px solid var(--line);padding:9px 13px;font-size:12px}
 
     .result{border-radius:20px;padding:22px;border:1px solid var(--line);margin-bottom:18px}
     .result .status{display:inline-flex;border-radius:999px;padding:6px 10px;font-weight:850;font-size:12px;margin-bottom:10px}
@@ -143,7 +145,7 @@
     .upload-status.success{background:var(--green-bg);color:var(--green);border:1px solid #b9e5d2}
     .upload-status.error{background:var(--red-bg);color:var(--red);border:1px solid #f0c7cb}
     .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
-    .resource-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .resource-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
     .resource{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 10px 28px rgba(21,48,76,.05)}
     .resource h3{margin:0 0 7px;color:var(--navy);font-size:17px}
     .resource p{margin:0 0 14px;color:var(--muted);font-size:13px}
@@ -182,6 +184,7 @@
   <div class="wrap topbar-inner">
     <div class="brand"><span class="brand-mark">HY</span><span>하냥이 하이비비 캐릭터 사용</span></div>
     <div class="nav-actions">
+      <a class="btn btn-soft" href="#resources">캐릭터 매뉴얼</a>
       <a class="btn btn-soft" href="#guide">사용 기준</a>
       <a class="btn btn-primary" href="#apply">사용 가능 여부 확인</a>
     </div>
@@ -223,6 +226,17 @@
       <div class="quick-item"><b>④ 색상·비율 변형</b><p>캐릭터의 색상·형태·비율 변경은 금지되어 있으며, 해당 시안은 수정이 필요합니다.</p></div>
     </div>
   </div>
+
+  <section id="resources">
+    <div class="wrap">
+      <div class="section-head"><div><h2>캐릭터 매뉴얼</h2><p>사용 절차를 확인하기 전에 각 캐릭터의 공식 매뉴얼을 먼저 확인해 주세요.</p></div></div>
+      <div class="resource-grid">
+        <article class="resource"><h3>하냥이 캐릭터 매뉴얼</h3><p>색상, 비례, 금지규정, 기본·응용동작 및 활용 예시가 포함되어 있습니다.</p><a class="btn btn-outline btn-block" href="assets/hanyang_manual.pdf" target="_blank" rel="noopener">하냥이 매뉴얼 열기</a></article>
+        <article class="resource"><h3>하이비비 캐릭터 매뉴얼</h3><p>색상, 비례, 금지규정, 표정·동작 및 응용 시스템을 확인할 수 있습니다.</p><a class="btn btn-outline btn-block" href="assets/hibibi_manual.pdf" target="_blank" rel="noopener">하이비비 매뉴얼 열기</a></article>
+      </div>
+      <div class="notice">공식 PNG 파일은 캐릭터 사용 절차를 확인한 뒤, 사용 가능한 범위로 판정된 경우 결과 화면에서 안내됩니다.</div>
+    </div>
+  </section>
 
   <section id="guide">
     <div class="wrap">
@@ -269,7 +283,7 @@
   <section id="apply">
     <div class="wrap">
       <div class="section-head">
-        <div><h2>캐릭터 사용 절차 확인</h2><p>답변에 따라 간편 신청·시안 검토·별도 협의 절차를 안내합니다.</p></div>
+        <div><h2>캐릭터 사용 절차 확인</h2><p>항목을 선택하면 다음 단계로 자동 이동하며, 답변에 따라 필요한 절차를 안내합니다.</p></div>
       </div>
       <div class="wizard-shell">
         <aside class="steps" aria-label="신청 단계">
@@ -280,6 +294,7 @@
         </aside>
 
         <div class="panel">
+          <div class="wizard-toolbar"><button type="button" class="btn reset-btn" id="resetWizard">처음부터 다시</button></div>
           <form id="wizardForm" novalidate>
             <div class="wizard-page active" data-page="1">
               <h3>신청자 유형을 선택해 주세요.</h3>
@@ -290,7 +305,6 @@
                 <label class="choice"><input type="radio" name="affiliationType" value="개인"><strong>개인</strong><span>재학생·교직원 개인 활용</span></label>
                 <label class="choice"><input type="radio" name="affiliationType" value="기타"><strong>기타</strong><span>외부기관·협력기관 등</span></label>
               </div>
-              <div class="wizard-actions"><span></span><button type="button" class="btn btn-primary" data-next>다음</button></div>
             </div>
 
             <div class="wizard-page" data-page="2">
@@ -307,7 +321,6 @@
                 <label class="choice"><input type="radio" name="modType" value="pose"><strong>새 포즈·표정·소품 추가</strong><span>캐릭터 자체에 새로운 요소가 생김</span></label>
                 <label class="choice"><input type="radio" name="modType" value="identity"><strong>색상·형태·비율 변경</strong><span>캐릭터 아이덴티티 변경에 해당</span></label>
               </div>
-              <div class="wizard-actions"><button type="button" class="btn btn-outline" data-prev>이전</button><button type="button" class="btn btn-primary" data-next>다음</button></div>
             </div>
 
             <div class="wizard-page" data-page="3">
@@ -322,7 +335,6 @@
                 <label class="choice"><input type="radio" name="purposeType" value="external"><strong>외부 행사·대외 홍보</strong><span>외부기관 협업, 외부 공개 홍보물 등</span></label>
                 <label class="choice choice-wide"><input type="radio" name="purposeType" value="other"><strong>기타</strong><span>위 사례에 정확히 들어맞지 않는 활용</span></label>
               </div>
-              <div class="wizard-actions"><button type="button" class="btn btn-outline" data-prev>이전</button><button type="button" class="btn btn-primary" id="judgeBtn">결과 확인</button></div>
             </div>
 
             <div class="wizard-page" data-page="4">
@@ -359,7 +371,7 @@
                 </div>
                 <div class="notice">‘담당자에게 메일 보내기’를 누르면 신청 정보와 첨부 시안이 Google Apps Script를 통해 전송됩니다. 첨부 파일은 신청용 Google Drive 폴더에 저장되며, 신청 내용과 파일 링크가 담당자 메일(cowkite125@hanyang.ac.kr)로 발송됩니다.</div>
                 <div class="wizard-actions">
-                  <button type="button" class="btn btn-outline" data-prev>조건 다시 선택</button>
+                  <button type="button" class="btn btn-outline" id="resetWizardBottom">처음부터 다시</button>
                   <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
                     <button type="button" class="btn btn-soft" id="copyBtn">신청내용 복사</button>
                     <button type="button" class="btn btn-primary" id="mailBtn">담당자에게 메일 보내기</button>
@@ -369,17 +381,6 @@
             </div>
           </form>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="resources">
-    <div class="wrap">
-      <div class="section-head"><div><h2>매뉴얼 · 다운로드</h2><p>사용 전 공식 가이드와 기존 시안을 확인해 주세요.</p></div></div>
-      <div class="resource-grid">
-        <article class="resource"><h3>하냥이 캐릭터 매뉴얼</h3><p>색상, 비례, 금지규정, 기본·응용동작 및 활용 예시가 포함되어 있습니다.</p><a class="btn btn-outline btn-block" href="assets/hanyang_manual.pdf" target="_blank" rel="noopener">PDF 열기</a></article>
-        <article class="resource"><h3>하이비비 캐릭터 매뉴얼</h3><p>색상, 비례, 금지규정, 표정·동작 및 응용 시스템을 확인할 수 있습니다.</p><a class="btn btn-outline btn-block" href="assets/hibibi_manual.pdf" target="_blank" rel="noopener">PDF 열기</a></article>
-        <article class="resource"><h3>공식 PNG / 사용 안내</h3><p>하냥이·하이비비 공식 PNG 파일은 Google Drive에서 확인하고 다운로드할 수 있습니다.</p><a class="btn btn-primary btn-block" href="https://drive.google.com/drive/u/0/folders/1YCwNF9r75sfC8ryeXL-ymxbikiQK3CNJ" target="_blank" rel="noopener">PNG 다운로드</a></article>
       </div>
     </div>
   </section>
@@ -400,13 +401,13 @@
 <footer>
   <div class="wrap foot">
     <div><b style="color:#38536a">한양대학교 ERICA 발전협력처 발전협력팀</b><br>캐릭터 활용 문의: 031-400-4479 · cowkite125@hanyang.ac.kr</div>
-    <div style="text-align:right">HanyangI · HiBibi Character Use · v1.2<br>본 페이지의 자동 판정은 1차 안내이며 최종 판단은 발전협력처 발전협력팀의 검토 기준을 따릅니다.</div>
+    <div style="text-align:right">HanyangI · HiBibi Character Use · v1.3<br>본 페이지의 자동 판정은 1차 안내이며 최종 판단은 발전협력처 발전협력팀의 검토 기준을 따릅니다.</div>
   </div>
 </footer>
 
 <script>
 (() => {
-  // Google Apps Script를 웹앱으로 배포한 뒤 /exec 주소를 아래에 입력해 주세요.
+  // Google Apps Script 웹앱 주소
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxdCdx4s-A-sHlY0y-JYu1UaJb0g3RYSwEfogEUr20nlb9_4E3jDKnNJc4aS0zRWTA/exec';
   const PNG_FOLDER_URL = 'https://drive.google.com/drive/u/0/folders/1YCwNF9r75sfC8ryeXL-ymxbikiQK3CNJ';
   const MAIL_TO = 'cowkite125@hanyang.ac.kr';
@@ -446,8 +447,37 @@
     return true;
   }
 
-  document.querySelectorAll('[data-next]').forEach(btn=>btn.addEventListener('click',()=>{if(validPage(current))showPage(current+1)}));
-  document.querySelectorAll('[data-prev]').forEach(btn=>btn.addEventListener('click',()=>showPage(Math.max(1,current-1))));
+  function resetWizard(){
+    form.reset();
+    decision=null;
+    form.dataset.requestId='';
+    document.getElementById('resultBox').innerHTML='';
+    document.getElementById('pngQuickArea').classList.add('hidden');
+    document.getElementById('applicationArea').classList.remove('hidden');
+    document.getElementById('fileField').classList.add('hidden');
+    document.getElementById('filePreview').innerHTML='';
+    const uploadStatus=document.getElementById('uploadStatus');
+    uploadStatus.className='upload-status';
+    uploadStatus.textContent='';
+    const mailBtn=document.getElementById('mailBtn');
+    mailBtn.disabled=false;
+    mailBtn.textContent='담당자에게 메일 보내기';
+    showPage(1);
+  }
+
+  document.getElementById('resetWizard').addEventListener('click',resetWizard);
+  document.getElementById('resetWizardBottom').addEventListener('click',resetWizard);
+
+  form.querySelectorAll('input[name="affiliationType"]').forEach(input=>{
+    input.addEventListener('change',()=>setTimeout(()=>showPage(2),160));
+  });
+
+  function tryAdvanceFromStep2(){
+    if(value('artType') && value('modType')) setTimeout(()=>showPage(3),160);
+  }
+  form.querySelectorAll('input[name="artType"], input[name="modType"]').forEach(input=>{
+    input.addEventListener('change',tryAdvanceFromStep2);
+  });
 
   function judge(){
     const art=value('artType'), mod=value('modType'), purpose=value('purposeType');
@@ -496,7 +526,9 @@
     document.getElementById('pngQuickArea').classList.toggle('hidden', decision.app || decision.type!=='ok');
     showPage(4);
   }
-  document.getElementById('judgeBtn').addEventListener('click',()=>{if(validPage(3))renderResult()});
+  form.querySelectorAll('input[name="purposeType"]').forEach(input=>{
+    input.addEventListener('change',()=>setTimeout(renderResult,160));
+  });
 
   document.getElementById('designFiles').addEventListener('change',e=>{
     const files=[...e.target.files];
