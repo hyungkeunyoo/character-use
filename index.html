@@ -457,14 +457,10 @@
 <footer>
   <div class="wrap foot">
     <div><b style="color:#38536a">한양대학교 ERICA 발전협력처 발전협력팀</b><br>캐릭터 활용 문의: 031-400-4479 · cowkite125@hanyang.ac.kr</div>
-    <div style="text-align:right">HanyangI · HiBibi Character Use · v1.8.2<br>본 페이지의 자동 판정은 1차 안내이며 최종 판단은 발전협력처 발전협력팀의 검토 기준을 따릅니다.</div>
+    <div style="text-align:right">HanyangI · HiBibi Character Use · v1.8.3<br>본 페이지의 자동 판정은 1차 안내이며 최종 판단은 발전협력처 발전협력팀의 검토 기준을 따릅니다.</div>
   </div>
 </footer>
 
-<form id="backendForm" method="post" target="backendResultFrame" class="backend-transport" aria-hidden="true">
-  <textarea name="payload" id="backendPayload" tabindex="-1"></textarea>
-</form>
-<iframe id="backendResultFrame" name="backendResultFrame" class="backend-transport" title="신청 처리 결과" aria-hidden="true"></iframe>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad" defer></script>
 <script>
 (() => {
@@ -473,10 +469,6 @@
   const MAX_FILES = 5;
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
   const MAX_TOTAL_FILE_SIZE = 18 * 1024 * 1024;
-  const TRUSTED_BACKEND_ORIGINS = new Set([
-    'https://script.google.com',
-    'https://script.googleusercontent.com'
-  ]);
 
   const form = document.getElementById('wizardForm');
   const pages = [...document.querySelectorAll('.wizard-page')];
@@ -486,9 +478,6 @@
   const securityArea = document.getElementById('securityArea');
   const recordStatus = document.getElementById('recordStatus');
   const retryRecordBtn = document.getElementById('retryRecordBtn');
-  const backendForm = document.getElementById('backendForm');
-  const backendPayload = document.getElementById('backendPayload');
-  const backendFrame = document.getElementById('backendResultFrame');
 
   let current = 1;
   let decision = null;
@@ -650,50 +639,27 @@
     el.textContent = '';
   }
 
-  function trustedBackendOrigin(origin) {
-    try {
-      const url = new URL(origin);
-      if (url.protocol !== 'https:') return false;
-      const host = url.hostname.toLowerCase();
-      return host === 'script.google.com' ||
-             host === 'script.googleusercontent.com' ||
-             host.endsWith('-script.googleusercontent.com');
-    } catch (_) {
-      return false;
-    }
-  }
-
-  window.addEventListener('message', event => {
-    // 응답은 우리가 만든 숨은 Apps Script 결과 iframe에서 온 것만 허용한다.
-    if (!backendFrame || event.source !== backendFrame.contentWindow) return;
-    if (!trustedBackendOrigin(event.origin)) return;
-    const data = event.data;
-    if (!data || data.type !== 'hychar-backend-response' || typeof data.statusToken !== 'string') return;
-    const pending = pendingBackend.get(data.statusToken);
-    if (!pending) return;
-    pendingBackend.delete(data.statusToken);
-    clearTimeout(pending.timer);
-    pending.resolve(data.result || { ok: false, code: 'SERVER_ERROR', message: '서버 응답을 확인할 수 없습니다.' });
-  });
-
+  /**
+   * Apps Script는 2026년 iframe 임베딩 회귀 이슈 때문에 응답 iframe에 의존하지 않는다.
+   * POST는 no-cors로 전송만 하고, 서버가 CacheService에 저장한 처리 결과를
+   * 예측 불가능한 statusToken으로 JSONP 폴링해 실제 성공/실패를 확인한다.
+   */
   function postBackendOnce(payload) {
-    return new Promise((resolve, reject) => {
-      if (!APPS_SCRIPT_URL.startsWith('https://script.google.com/macros/s/')) {
-        reject(new Error('Google Apps Script 웹앱 주소가 설정되지 않았습니다.'));
-        return;
-      }
+    if (!APPS_SCRIPT_URL.startsWith('https://script.google.com/macros/s/')) {
+      return Promise.reject(new Error('Google Apps Script 웹앱 주소가 설정되지 않았습니다.'));
+    }
 
-      const statusToken = randomHex(16);
-      const timer = setTimeout(() => {
-        pendingBackend.delete(statusToken);
-        reject(new Error('서버 응답 시간이 초과되었습니다. 실제 접수 여부를 확인한 뒤 다시 시도해 주세요.'));
-      }, 120000);
+    const statusToken = randomHex(16);
+    const requestBody = JSON.stringify({ ...payload, statusToken });
 
-      pendingBackend.set(statusToken, { resolve, reject, timer });
-      backendPayload.value = JSON.stringify({ ...payload, statusToken });
-      backendForm.submit();
-      window.setTimeout(() => { backendPayload.value = ''; }, 0);
-    });
+    return fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      cache: 'no-store',
+      redirect: 'follow',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: requestBody
+    }).then(() => pollBackendResult(statusToken));
   }
 
   function postBackend(payload) {
@@ -701,6 +667,79 @@
     const promise = backendQueue.then(task, task);
     backendQueue = promise.catch(() => {});
     return promise;
+  }
+
+  function pollBackendResult(statusToken) {
+    const deadline = Date.now() + 120000;
+
+    return new Promise((resolve, reject) => {
+      const attempt = () => {
+        jsonpPoll(statusToken).then(packet => {
+          if (packet && packet.state === 'done') {
+            resolve(packet.result || { ok: false, code: 'SERVER_ERROR', message: '서버 응답을 확인할 수 없습니다.' });
+            return;
+          }
+          if (packet && packet.state === 'rejected') {
+            reject(new Error(packet.message || '서버 응답 확인 요청이 거부되었습니다.'));
+            return;
+          }
+          if (Date.now() >= deadline) {
+            reject(new Error('서버 처리 결과 확인 시간이 초과되었습니다. 실제 접수 여부를 확인한 뒤 다시 시도해 주세요.'));
+            return;
+          }
+          window.setTimeout(attempt, 900);
+        }).catch(err => {
+          if (Date.now() >= deadline) {
+            reject(new Error('서버 처리 결과를 확인하지 못했습니다. 실제 접수 여부를 확인한 뒤 다시 시도해 주세요.'));
+            return;
+          }
+          console.warn('결과 확인 재시도:', err);
+          window.setTimeout(attempt, 1200);
+        });
+      };
+      attempt();
+    });
+  }
+
+  function jsonpPoll(statusToken) {
+    return new Promise((resolve, reject) => {
+      const callbackName = `__hycharPoll_${randomHex(12)}`;
+      const script = document.createElement('script');
+      let settled = false;
+
+      const cleanup = () => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        try { delete window[callbackName]; } catch (_) { window[callbackName] = undefined; }
+        if (script.parentNode) script.parentNode.removeChild(script);
+      };
+
+      const timer = window.setTimeout(() => {
+        cleanup();
+        reject(new Error('결과 확인 요청 시간이 초과되었습니다.'));
+      }, 15000);
+
+      window[callbackName] = data => {
+        cleanup();
+        resolve(data || { state: 'pending' });
+      };
+
+      script.onerror = () => {
+        cleanup();
+        reject(new Error('결과 확인 서버에 연결하지 못했습니다.'));
+      };
+
+      const query = new URLSearchParams({
+        action: 'poll',
+        statusToken,
+        callback: callbackName,
+        _: String(Date.now())
+      });
+      script.src = `${APPS_SCRIPT_URL}?${query.toString()}`;
+      script.async = true;
+      document.head.appendChild(script);
+    });
   }
 
   window.onTurnstileLoad = function () {
@@ -1170,7 +1209,6 @@
   // 초기 상태: 결과 페이지의 신청/PNG 영역은 서버에서 신청번호 발급이 성공한 뒤에만 노출합니다.
   applicationArea.classList.add('hidden');
   pngQuickArea.classList.add('hidden');
-  backendForm.action = APPS_SCRIPT_URL;
 })();
 
 </script>
