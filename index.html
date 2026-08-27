@@ -126,6 +126,8 @@
     .result.review{background:var(--amber-bg);border-color:#f0d9a8}.result.review .status{background:#ffe9b3;color:var(--amber)}.result.review h4{color:#865000}
     .result.reject{background:var(--red-bg);border-color:#f0c7cb}.result.reject .status{background:#ffdadd;color:var(--red)}.result.reject h4{color:#922930}
     .result.neutral{background:#eef6fb;border-color:#cfe2ef}.result.neutral .status{background:#d8eefa;color:#165b86}.result.neutral h4{color:#114f76}
+    .log-note{margin:12px 0 18px;padding:12px 14px;border:1px solid #d9e7f1;border-radius:12px;background:#f7fbfe;color:#5a7083;font-size:12px}
+    .log-note b{color:#214b6b}
     .summary{border:1px solid var(--line);border-radius:18px;overflow:hidden;margin:18px 0}
     .summary-row{display:grid;grid-template-columns:160px 1fr;border-bottom:1px solid #edf1f4}
     .summary-row:last-child{border-bottom:0}
@@ -361,7 +363,7 @@
                   <div class="field full"><label for="purposeDetail">구체적인 활용 목적 *</label><textarea id="purposeDetail" name="purposeDetail" placeholder="제작물, 사용 장소, 사용 기간, 활용 방식 등을 구체적으로 작성해 주세요."></textarea></div>
                   <div class="field"><label for="period">활용 예정 기간</label><input id="period" name="period" placeholder="예: 2026.09.01 ~ 2026.09.30"></div>
                   <div class="field"><label for="quantity">제작 수량 / 노출 규모</label><input id="quantity" name="quantity" placeholder="예: 스티커 300매 / 인스타그램 게시물 1건"></div>
-                  <div class="field full hidden" id="fileField"><label for="designFiles">신규 시안 파일</label><input id="designFiles" name="designFiles" type="file" accept="image/*,.pdf" multiple><span class="hint">PNG/JPG/PDF 파일을 최대 5개까지 첨부할 수 있으며, 파일당 5MB 이하를 권장합니다. 제출 시 파일은 발전협력팀 신청용 Google Drive 폴더에 저장되고 담당자 메일에는 Drive 링크가 전달됩니다.</span><div id="filePreview" class="upload-preview"></div><div id="uploadStatus" class="upload-status"></div></div>
+                  <div class="field full hidden" id="fileField"><label for="designFiles">신규 시안 파일</label><input id="designFiles" name="designFiles" type="file" accept="image/*,.pdf" multiple><span class="hint">PNG/JPG/PDF 파일을 최대 5개까지 첨부할 수 있으며, 파일당 5MB·전체 18MB 이하로 준비해 주세요. 제출한 시안 파일은 Google Drive에 별도 저장하지 않으며, 담당자에게 발송되는 신청 메일에 직접 첨부됩니다.</span><div id="filePreview" class="upload-preview"></div><div id="uploadStatus" class="upload-status"></div></div>
                 </div>
 
                 <div style="margin-top:16px;border-top:1px solid #edf1f4;padding-top:12px">
@@ -369,7 +371,7 @@
                   <label class="checkline"><input type="checkbox" id="agree2"> <span>매뉴얼에 없는 포즈·표정·소품 또는 새로운 디자인은 필요한 경우 발전협력처 발전협력팀의 사전 검토를 받겠습니다.</span></label>
                   <label class="checkline"><input type="checkbox" id="agree3"> <span>승인받지 않은 디자인·제품 생산 및 상업적 활용을 진행하지 않겠습니다.</span></label>
                 </div>
-                <div class="notice">‘담당자에게 메일 보내기’를 누르면 신청 정보와 첨부 시안이 Google Apps Script를 통해 전송됩니다. 첨부 파일은 신청용 Google Drive 폴더에 저장되며, 신청 내용과 파일 링크가 담당자 메일(cowkite125@hanyang.ac.kr)로 발송됩니다.</div>
+                <div class="notice">‘담당자에게 메일 보내기’를 누르면 신청 정보와 첨부 시안이 Google Apps Script를 통해 담당자 메일(cowkite125@hanyang.ac.kr)로 직접 발송됩니다. 첨부 시안은 Google Drive에 별도 보관하지 않으며, 신청번호와 신청 정보만 사용 이력 Google Sheets에 기록됩니다.</div>
                 <div class="wizard-actions">
                   <button type="button" class="btn btn-outline" id="resetWizardBottom">처음부터 다시</button>
                   <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
@@ -401,7 +403,7 @@
 <footer>
   <div class="wrap foot">
     <div><b style="color:#38536a">한양대학교 ERICA 발전협력처 발전협력팀</b><br>캐릭터 활용 문의: 031-400-4479 · cowkite125@hanyang.ac.kr</div>
-    <div style="text-align:right">HanyangI · HiBibi Character Use · v1.3<br>본 페이지의 자동 판정은 1차 안내이며 최종 판단은 발전협력처 발전협력팀의 검토 기준을 따릅니다.</div>
+    <div style="text-align:right">HanyangI · HiBibi Character Use · v1.5<br>본 페이지의 자동 판정은 1차 안내이며 최종 판단은 발전협력처 발전협력팀의 검토 기준을 따릅니다.</div>
   </div>
 </footer>
 
@@ -413,6 +415,7 @@
   const MAIL_TO = 'cowkite125@hanyang.ac.kr';
   const MAX_FILES = 5;
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
+  const MAX_TOTAL_FILE_SIZE = 18 * 1024 * 1024;
 
   const form = document.getElementById('wizardForm');
   const pages = [...document.querySelectorAll('.wizard-page')];
@@ -504,6 +507,31 @@
     return `HYCHAR-${y}${m}${day}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
   }
 
+  function logUseHistory(){
+    if(!form.dataset.requestId || !decision) return;
+    const payload={
+      action:'characterUseLog',
+      requestId:form.dataset.requestId,
+      decision:decision.badge||'',
+      affiliationType:value('affiliationType'),
+      artType:labelMap.artType[value('artType')]||'',
+      modType:labelMap.modType[value('modType')]||'',
+      purposeType:labelMap.purposeType[value('purposeType')]||''
+    };
+    try{
+      fetch(APPS_SCRIPT_URL,{
+        method:'POST',
+        mode:'no-cors',
+        cache:'no-store',
+        keepalive:true,
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body:JSON.stringify(payload)
+      }).catch(err=>console.warn('사용 이력 기록 실패',err));
+    }catch(err){
+      console.warn('사용 이력 기록 실패',err);
+    }
+  }
+
   function renderResult(){
     decision=judge(); if(!decision) return;
     const id=makeId(); form.dataset.requestId=id;
@@ -520,11 +548,13 @@
         <div class="summary-row"><dt>활용 방식</dt><dd>${labelMap.artType[value('artType')]}</dd></div>
         <div class="summary-row"><dt>변형 정도</dt><dd>${labelMap.modType[value('modType')]}</dd></div>
         <div class="summary-row"><dt>활용 목적</dt><dd>${labelMap.purposeType[value('purposeType')]}</dd></div>
-      </dl>`;
+      </dl>
+      <div class="log-note"><b>사용 이력 자동 기록</b> · 위 신청번호와 선택 결과는 하냥이·하이비비 캐릭터 활용 현황 파악을 위해 자동 기록됩니다.</div>`;
     document.getElementById('applicationArea').classList.toggle('hidden', !decision.app);
     document.getElementById('fileField').classList.toggle('hidden', !decision.file);
     document.getElementById('pngQuickArea').classList.toggle('hidden', decision.app || decision.type!=='ok');
     showPage(4);
+    logUseHistory();
   }
   form.querySelectorAll('input[name="purposeType"]').forEach(input=>{
     input.addEventListener('change',()=>setTimeout(renderResult,160));
@@ -541,6 +571,13 @@
     const tooLarge=files.find(f=>f.size>MAX_FILE_SIZE);
     if(tooLarge){
       alert(`${tooLarge.name} 파일이 5MB를 초과합니다. 파일당 5MB 이하로 준비해 주세요.`);
+      e.target.value='';
+      document.getElementById('filePreview').innerHTML='';
+      return;
+    }
+    const totalSize=files.reduce((sum,f)=>sum+f.size,0);
+    if(totalSize>MAX_TOTAL_FILE_SIZE){
+      alert('첨부 파일 전체 용량은 18MB 이하로 준비해 주세요.');
       e.target.value='';
       document.getElementById('filePreview').innerHTML='';
       return;
@@ -606,7 +643,6 @@
       const files=await Promise.all([...document.getElementById('designFiles').files].map(fileToPayload));
       const payload={
         action:'characterUseApplication',
-        mailTo:MAIL_TO,
         requestId:form.dataset.requestId,
         decision:decision?.badge||'',
         affiliationType:value('affiliationType'),
@@ -621,18 +657,18 @@
         purposeDetail:document.getElementById('purposeDetail').value.trim(),
         period:document.getElementById('period').value.trim(),
         quantity:document.getElementById('quantity').value.trim(),
-        pngFolderUrl:PNG_FOLDER_URL,
         files
       };
 
       await fetch(APPS_SCRIPT_URL,{
         method:'POST',
         mode:'no-cors',
+        cache:'no-store',
         headers:{'Content-Type':'text/plain;charset=utf-8'},
         body:JSON.stringify(payload)
       });
 
-      setUploadStatus('success',`전송 요청을 완료했습니다. 신청 내용과 첨부 파일 링크가 ${MAIL_TO}로 발송됩니다.`);
+      setUploadStatus('success',`전송 요청을 완료했습니다. 신청 내용과 첨부 파일이 ${MAIL_TO}로 발송됩니다. 첨부 파일은 Google Drive에 별도 저장되지 않습니다.`);
       btn.textContent='전송 완료';
       alert('신청이 전송되었습니다. 담당자가 확인 후 필요한 경우 연락드립니다.');
     }catch(err){
