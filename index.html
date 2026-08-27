@@ -133,6 +133,16 @@
     .upload-preview{margin-top:8px;display:flex;flex-direction:column;gap:6px}
     .file-pill{background:#f3f7fa;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:12px;color:#536a7d}
 
+    .png-quick{margin:18px 0 22px;padding:20px;border:1px solid #b9e5d2;border-radius:18px;background:#f4fbf8}
+    .png-quick h5{margin:0 0 5px;color:#075f43;font-size:17px}
+    .png-quick p{margin:0 0 14px;color:#597265;font-size:13px}
+    .png-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .upload-status{margin-top:10px;border-radius:12px;padding:11px 13px;font-size:12px;display:none}
+    .upload-status.show{display:block}
+    .upload-status.sending{background:#eef6fb;color:#165b86;border:1px solid #cfe2ef}
+    .upload-status.success{background:var(--green-bg);color:var(--green);border:1px solid #b9e5d2}
+    .upload-status.error{background:var(--red-bg);color:var(--red);border:1px solid #f0c7cb}
+    .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
     .resource-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
     .resource{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 10px 28px rgba(21,48,76,.05)}
     .resource h3{margin:0 0 7px;color:var(--navy);font-size:17px}
@@ -287,7 +297,7 @@
               <h3>캐릭터 활용 방식을 선택해 주세요.</h3>
               <p class="desc">기존 공식 시안 사용 여부와 신규 디자인 여부에 따라 절차가 달라집니다.</p>
               <div class="choice-grid">
-                <label class="choice"><input type="radio" name="artType" value="official" required><strong>공식 PNG/JPG 시안을 그대로 사용</strong><span>제공된 캐릭터 이미지를 새로 그리지 않고 활용</span></label>
+                <label class="choice"><input type="radio" name="artType" value="official" required><strong>공식 PNG 시안을 그대로 사용</strong><span>제공된 캐릭터 이미지를 새로 그리지 않고 활용</span></label>
                 <label class="choice"><input type="radio" name="artType" value="new"><strong>새롭게 그리거나 변형해서 사용</strong><span>새 포즈·표정·소품·드로잉·응용 디자인 포함</span></label>
               </div>
               <h4 style="margin:26px 0 10px;color:#294b63">변형 여부를 선택해 주세요.</h4>
@@ -317,6 +327,15 @@
 
             <div class="wizard-page" data-page="4">
               <div id="resultBox"></div>
+              <div id="pngQuickArea" class="png-quick hidden">
+                <h5>공식 PNG 바로 사용</h5>
+                <p>별도 승인 없이 사용할 수 있는 경우 아래 공식 PNG를 내려받아 매뉴얼의 금지규정을 준수하여 사용해 주세요.</p>
+                <div class="png-actions">
+                  <a class="btn btn-primary" href="https://drive.google.com/drive/u/0/folders/1YCwNF9r75sfC8ryeXL-ymxbikiQK3CNJ" target="_blank" rel="noopener">전체 PNG 폴더</a>
+                  <a class="btn btn-outline" href="https://drive.google.com/drive/folders/1EA3BhwfmMn59TUdlrkd1DuRulKgmH_8f" target="_blank" rel="noopener">하냥이 PNG</a>
+                  <a class="btn btn-outline" href="https://drive.google.com/drive/folders/1XJiEHB2v5Oa1emGAcDWK46A5zg33mzV0" target="_blank" rel="noopener">하이비비 PNG</a>
+                </div>
+              </div>
 
               <div id="applicationArea">
                 <h3 style="margin-top:18px">신청 정보</h3>
@@ -324,13 +343,13 @@
                 <div class="fields">
                   <div class="field"><label for="name">이름 *</label><input id="name" name="name" autocomplete="name"></div>
                   <div class="field"><label for="idNo">학번/사번 *</label><input id="idNo" name="idNo" placeholder="외부인은 '외부' 입력"></div>
-                  <div class="field full"><label for="affiliation">구체적 소속 *</label><input id="affiliation" name="affiliation" placeholder="예: 언론정보대학 학생회 / ○○사업단 / ○○학과"></div>
+                  <div class="field full"><label for="affiliation">구체적 소속 *</label><input id="affiliation" name="affiliation" placeholder="예: 공학대학 학생회 / ○○사업단 / ○○학과"></div>
                   <div class="field"><label for="phone">전화번호 *</label><input id="phone" name="phone" type="tel" autocomplete="tel"></div>
                   <div class="field"><label for="email">메일주소 *</label><input id="email" name="email" type="email" autocomplete="email"></div>
                   <div class="field full"><label for="purposeDetail">구체적인 활용 목적 *</label><textarea id="purposeDetail" name="purposeDetail" placeholder="제작물, 사용 장소, 사용 기간, 활용 방식 등을 구체적으로 작성해 주세요."></textarea></div>
                   <div class="field"><label for="period">활용 예정 기간</label><input id="period" name="period" placeholder="예: 2026.09.01 ~ 2026.09.30"></div>
                   <div class="field"><label for="quantity">제작 수량 / 노출 규모</label><input id="quantity" name="quantity" placeholder="예: 스티커 300매 / 인스타그램 게시물 1건"></div>
-                  <div class="field full hidden" id="fileField"><label for="designFiles">신규 시안 파일</label><input id="designFiles" name="designFiles" type="file" accept="image/*,.pdf" multiple><span class="hint">브라우저 보안상 이메일에 파일을 자동 첨부할 수 없습니다. 메일 작성 화면에서 해당 시안 파일을 직접 첨부해 주세요.</span><div id="filePreview" class="upload-preview"></div></div>
+                  <div class="field full hidden" id="fileField"><label for="designFiles">신규 시안 파일</label><input id="designFiles" name="designFiles" type="file" accept="image/*,.pdf" multiple><span class="hint">PNG/JPG/PDF 파일을 최대 5개까지 첨부할 수 있으며, 파일당 5MB 이하를 권장합니다. 제출 시 파일은 발전협력팀 신청용 Google Drive 폴더에 저장되고 담당자 메일에는 Drive 링크가 전달됩니다.</span><div id="filePreview" class="upload-preview"></div><div id="uploadStatus" class="upload-status"></div></div>
                 </div>
 
                 <div style="margin-top:16px;border-top:1px solid #edf1f4;padding-top:12px">
@@ -338,12 +357,12 @@
                   <label class="checkline"><input type="checkbox" id="agree2"> <span>매뉴얼에 없는 포즈·표정·소품 또는 새로운 디자인은 필요한 경우 발전협력처 발전협력팀의 사전 검토를 받겠습니다.</span></label>
                   <label class="checkline"><input type="checkbox" id="agree3"> <span>승인받지 않은 디자인·제품 생산 및 상업적 활용을 진행하지 않겠습니다.</span></label>
                 </div>
-                <div class="notice">입력 내용은 현재 페이지에서만 처리되며, ‘메일 작성’ 버튼을 누르기 전까지 별도 서버로 전송되거나 저장되지 않습니다.</div>
+                <div class="notice">‘담당자에게 메일 보내기’를 누르면 신청 정보와 첨부 시안이 Google Apps Script를 통해 전송됩니다. 첨부 파일은 신청용 Google Drive 폴더에 저장되며, 신청 내용과 파일 링크가 담당자 메일(cowkite125@hanyang.ac.kr)로 발송됩니다.</div>
                 <div class="wizard-actions">
                   <button type="button" class="btn btn-outline" data-prev>조건 다시 선택</button>
                   <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
                     <button type="button" class="btn btn-soft" id="copyBtn">신청내용 복사</button>
-                    <button type="button" class="btn btn-primary" id="mailBtn">담당자에게 메일 작성</button>
+                    <button type="button" class="btn btn-primary" id="mailBtn">담당자에게 메일 보내기</button>
                   </div>
                 </div>
               </div>
@@ -360,7 +379,7 @@
       <div class="resource-grid">
         <article class="resource"><h3>하냥이 캐릭터 매뉴얼</h3><p>색상, 비례, 금지규정, 기본·응용동작 및 활용 예시가 포함되어 있습니다.</p><a class="btn btn-outline btn-block" href="assets/hanyang_manual.pdf" target="_blank" rel="noopener">PDF 열기</a></article>
         <article class="resource"><h3>하이비비 캐릭터 매뉴얼</h3><p>색상, 비례, 금지규정, 표정·동작 및 응용 시스템을 확인할 수 있습니다.</p><a class="btn btn-outline btn-block" href="assets/hibibi_manual.pdf" target="_blank" rel="noopener">PDF 열기</a></article>
-        <article class="resource"><h3>공식 PNG / 사용 안내</h3><p>기존 PNG 다운로드 및 사용 안내는 ERICA 공식 블로그 안내 페이지에서 확인해 주세요.</p><a class="btn btn-primary btn-block" href="https://blog.naver.com/hyerica4473/223426927411" target="_blank" rel="noopener">공식 안내 페이지</a></article>
+        <article class="resource"><h3>공식 PNG / 사용 안내</h3><p>하냥이·하이비비 공식 PNG 파일은 Google Drive에서 확인하고 다운로드할 수 있습니다.</p><a class="btn btn-primary btn-block" href="https://drive.google.com/drive/u/0/folders/1YCwNF9r75sfC8ryeXL-ymxbikiQK3CNJ" target="_blank" rel="noopener">PNG 다운로드</a></article>
       </div>
     </div>
   </section>
@@ -380,13 +399,20 @@
 
 <footer>
   <div class="wrap foot">
-    <div><b style="color:#38536a">한양대학교 ERICA 발전협력처 발전협력팀</b><br>캐릭터 활용 문의: 031-400-4479 · hyerica@hanyang.ac.kr</div>
-    <div style="text-align:right">HanyangI · HiBibi Character Use · v1.1<br>본 페이지의 자동 판정은 1차 안내이며 최종 판단은 발전협력처 발전협력팀의 검토 기준을 따릅니다.</div>
+    <div><b style="color:#38536a">한양대학교 ERICA 발전협력처 발전협력팀</b><br>캐릭터 활용 문의: 031-400-4479 · cowkite125@hanyang.ac.kr</div>
+    <div style="text-align:right">HanyangI · HiBibi Character Use · v1.2<br>본 페이지의 자동 판정은 1차 안내이며 최종 판단은 발전협력처 발전협력팀의 검토 기준을 따릅니다.</div>
   </div>
 </footer>
 
 <script>
 (() => {
+  // Google Apps Script를 웹앱으로 배포한 뒤 /exec 주소를 아래에 입력해 주세요.
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxdCdx4s-A-sHlY0y-JYu1UaJb0g3RYSwEfogEUr20nlb9_4E3jDKnNJc4aS0zRWTA/exec';
+  const PNG_FOLDER_URL = 'https://drive.google.com/drive/u/0/folders/1YCwNF9r75sfC8ryeXL-ymxbikiQK3CNJ';
+  const MAIL_TO = 'cowkite125@hanyang.ac.kr';
+  const MAX_FILES = 5;
+  const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
   const form = document.getElementById('wizardForm');
   const pages = [...document.querySelectorAll('.wizard-page')];
   const steps = [...document.querySelectorAll('.step')];
@@ -395,7 +421,7 @@
 
   const value = name => form.querySelector(`[name="${name}"]:checked`)?.value || '';
   const labelMap = {
-    artType:{official:'공식 PNG/JPG 그대로 사용',new:'새롭게 그리거나 변형'},
+    artType:{official:'공식 PNG 그대로 사용',new:'새롭게 그리거나 변형'},
     modType:{none:'변형 없음',layout:'문구·배경·레이아웃만 추가',pose:'새 포즈·표정·소품 추가',identity:'색상·형태·비율 변경'},
     purposeType:{class:'수업·과제·교내 카드뉴스',internal:'교내 홍보·행사 운영',freegoods:'무료 배포 굿즈·기념품',donation:'교내 기부모금 연계 굿즈',commercial:'판매·상업·개인 수익 목적',external:'외부 행사·대외 홍보',other:'기타'}
   };
@@ -437,9 +463,9 @@
       return {type:'review', badge:'시안 검토 필요', title:'담당자 사전 검토가 필요합니다.', text:'새로운 드로잉·포즈·소품 또는 외부 활용 범위가 포함되어 있습니다. 실제 제작·게시 전에 시안과 신청 정보를 함께 제출해 검토를 받아 주세요.', app:true, file:true};
     }
     if(purpose==='class' && art==='official' && (mod==='none'||mod==='layout')){
-      return {type:'ok', badge:'별도 승인 없이 사용 가능', title:'별도 승인 없이 사용할 수 있는 범위입니다.', text:'교내 과제·학생단체 카드뉴스 등 비영리 활용에서 공식 캐릭터 원형을 유지하는 경우에는 별도 사전 승인 없이 사용할 수 있습니다. 단, 캐릭터 매뉴얼의 금지규정은 반드시 준수해 주세요.', app:false, file:false};
+      return {type:'ok', badge:'별도 승인 없이 사용 가능', title:'별도 승인 없이 사용할 수 있는 범위입니다.', text:'교내 과제·학생단체 카드뉴스 등 비영리 활용에서 공식 캐릭터 원형을 유지하는 경우에는 별도 사전 승인 없이 사용할 수 있습니다. 아래 공식 PNG를 내려받아 캐릭터 매뉴얼의 금지규정을 준수해 주세요.', app:false, file:false};
     }
-    return {type:'neutral', badge:'간편 신청', title:'간편 신청 절차로 진행할 수 있습니다.', text:'공식 PNG/JPG를 그대로 사용하고 캐릭터 자체를 변형하지 않는 활용입니다. 아래 신청 정보를 작성해 사용 기록을 제출해 주세요.', app:true, file:false};
+    return {type:'neutral', badge:'간편 신청', title:'간편 신청 절차로 진행할 수 있습니다.', text:'공식 PNG를 그대로 사용하고 캐릭터 자체를 변형하지 않는 활용입니다. 아래 신청 정보를 작성해 사용 기록을 제출해 주세요.', app:true, file:false};
   }
 
   function makeId(){
@@ -467,22 +493,38 @@
       </dl>`;
     document.getElementById('applicationArea').classList.toggle('hidden', !decision.app);
     document.getElementById('fileField').classList.toggle('hidden', !decision.file);
+    document.getElementById('pngQuickArea').classList.toggle('hidden', decision.app || decision.type!=='ok');
     showPage(4);
   }
   document.getElementById('judgeBtn').addEventListener('click',()=>{if(validPage(3))renderResult()});
 
   document.getElementById('designFiles').addEventListener('change',e=>{
+    const files=[...e.target.files];
+    if(files.length>MAX_FILES){
+      alert(`첨부 파일은 최대 ${MAX_FILES}개까지 선택할 수 있습니다.`);
+      e.target.value='';
+      document.getElementById('filePreview').innerHTML='';
+      return;
+    }
+    const tooLarge=files.find(f=>f.size>MAX_FILE_SIZE);
+    if(tooLarge){
+      alert(`${tooLarge.name} 파일이 5MB를 초과합니다. 파일당 5MB 이하로 준비해 주세요.`);
+      e.target.value='';
+      document.getElementById('filePreview').innerHTML='';
+      return;
+    }
     const out=document.getElementById('filePreview'); out.innerHTML='';
-    [...e.target.files].forEach(f=>{const div=document.createElement('div');div.className='file-pill';div.textContent=`${f.name} · ${(f.size/1024/1024).toFixed(2)} MB`;out.appendChild(div)});
+    files.forEach(f=>{const div=document.createElement('div');div.className='file-pill';div.textContent=`${f.name} · ${(f.size/1024/1024).toFixed(2)} MB`;out.appendChild(div)});
   });
 
   function validateApplication(){
     const req=['name','idNo','affiliation','phone','email','purposeDetail'];
     for(const id of req){const el=document.getElementById(id);if(!el.value.trim()){alert(`${el.previousElementSibling?.textContent||'필수 항목'}을 입력해 주세요.`);el.focus();return false}}
     if(!document.getElementById('email').value.includes('@')){alert('메일주소 형식을 확인해 주세요.');return false}
-    if(!['agree1','agree2','agree3'].every(id=>document.getElementById(id).checked)){alert('캐릭터 사용 유의사항 3개 항목에 모두 동의해야 신청 내용을 작성할 수 있습니다.');return false}
+    if(!['agree1','agree2','agree3'].every(id=>document.getElementById(id).checked)){alert('캐릭터 사용 유의사항 3개 항목에 모두 동의해야 신청할 수 있습니다.');return false}
     if(decision?.file && document.getElementById('designFiles').files.length===0){
-      if(!confirm('신규 시안 검토 대상이나 파일이 선택되지 않았습니다. 신청 내용을 작성한 후 메일에서 시안 파일을 직접 첨부하시겠습니까?')) return false;
+      alert('담당자 사전 검토 대상은 신규 시안 파일을 반드시 첨부해야 합니다.');
+      return false;
     }
     return true;
   }
@@ -492,16 +534,81 @@
     return `[하냥이·하이비비 캐릭터 사용 신청]\n\n신청번호: ${form.dataset.requestId}\n1차 판정: ${decision?.badge||''}\n신청자 구분: ${value('affiliationType')}\n활용 방식: ${labelMap.artType[value('artType')]}\n변형 정도: ${labelMap.modType[value('modType')]}\n활용 목적: ${labelMap.purposeType[value('purposeType')]}\n\n이름: ${document.getElementById('name').value}\n학번/사번: ${document.getElementById('idNo').value}\n구체적 소속: ${document.getElementById('affiliation').value}\n전화번호: ${document.getElementById('phone').value}\n메일주소: ${document.getElementById('email').value}\n활용 예정 기간: ${document.getElementById('period').value || '-'}\n제작 수량/노출 규모: ${document.getElementById('quantity').value || '-'}\n시안 파일명: ${files}\n\n[구체적 활용 목적]\n${document.getElementById('purposeDetail').value}\n\n[확인사항]\n- 캐릭터 색상·형태·비율 임의 변경 금지 확인\n- 신규 포즈·표정·소품·디자인 사전 검토 확인\n- 승인받지 않은 제품 생산 및 상업적 활용 금지 확인`;
   }
 
+  async function fileToPayload(file){
+    return new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=()=>{
+        const result=String(reader.result||'');
+        const base64=result.includes(',')?result.split(',')[1]:result;
+        resolve({name:file.name,type:file.type||'application/octet-stream',size:file.size,data:base64});
+      };
+      reader.onerror=()=>reject(new Error(`${file.name} 파일을 읽을 수 없습니다.`));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function setUploadStatus(type,msg){
+    const el=document.getElementById('uploadStatus');
+    el.className=`upload-status show ${type}`;
+    el.textContent=msg;
+  }
+
   document.getElementById('copyBtn').addEventListener('click',async()=>{
     if(!validateApplication())return;
-    try{await navigator.clipboard.writeText(buildText());alert('신청 내용을 클립보드에 복사했습니다.')}catch{alert('브라우저에서 자동 복사가 제한되었습니다. 메일 작성 버튼을 이용해 주세요.')}
+    try{await navigator.clipboard.writeText(buildText());alert('신청 내용을 클립보드에 복사했습니다.')}catch{alert('브라우저에서 자동 복사가 제한되었습니다.')}
   });
 
-  document.getElementById('mailBtn').addEventListener('click',()=>{
+  document.getElementById('mailBtn').addEventListener('click',async()=>{
     if(!validateApplication())return;
-    const subject=encodeURIComponent(`[하냥이·하이비비 캐릭터 사용 신청] ${document.getElementById('affiliation').value} / ${document.getElementById('name').value}`);
-    const body=encodeURIComponent(buildText()+ (decision?.file?'\n\n※ 신규 시안 검토 대상입니다. 시안 파일을 이 메일에 첨부해 주세요.':''));
-    location.href=`mailto:hyerica@hanyang.ac.kr?subject=${subject}&body=${body}`;
+    if(!APPS_SCRIPT_URL.startsWith('https://script.google.com/macros/s/')){
+      alert('Google Apps Script 웹앱 주소가 아직 설정되지 않았습니다. index.html의 APPS_SCRIPT_URL 값을 먼저 입력해 주세요.');
+      return;
+    }
+
+    const btn=document.getElementById('mailBtn');
+    btn.disabled=true;
+    btn.textContent='전송 중...';
+    setUploadStatus('sending','신청 정보와 첨부 파일을 전송하고 있습니다. 창을 닫지 마세요.');
+
+    try{
+      const files=await Promise.all([...document.getElementById('designFiles').files].map(fileToPayload));
+      const payload={
+        action:'characterUseApplication',
+        mailTo:MAIL_TO,
+        requestId:form.dataset.requestId,
+        decision:decision?.badge||'',
+        affiliationType:value('affiliationType'),
+        artType:labelMap.artType[value('artType')],
+        modType:labelMap.modType[value('modType')],
+        purposeType:labelMap.purposeType[value('purposeType')],
+        name:document.getElementById('name').value.trim(),
+        idNo:document.getElementById('idNo').value.trim(),
+        affiliation:document.getElementById('affiliation').value.trim(),
+        phone:document.getElementById('phone').value.trim(),
+        email:document.getElementById('email').value.trim(),
+        purposeDetail:document.getElementById('purposeDetail').value.trim(),
+        period:document.getElementById('period').value.trim(),
+        quantity:document.getElementById('quantity').value.trim(),
+        pngFolderUrl:PNG_FOLDER_URL,
+        files
+      };
+
+      await fetch(APPS_SCRIPT_URL,{
+        method:'POST',
+        mode:'no-cors',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body:JSON.stringify(payload)
+      });
+
+      setUploadStatus('success',`전송 요청을 완료했습니다. 신청 내용과 첨부 파일 링크가 ${MAIL_TO}로 발송됩니다.`);
+      btn.textContent='전송 완료';
+      alert('신청이 전송되었습니다. 담당자가 확인 후 필요한 경우 연락드립니다.');
+    }catch(err){
+      console.error(err);
+      setUploadStatus('error','전송 과정에서 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+      btn.disabled=false;
+      btn.textContent='담당자에게 메일 보내기';
+    }
   });
 })();
 </script>
