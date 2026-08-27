@@ -457,7 +457,7 @@
 <footer>
   <div class="wrap foot">
     <div><b style="color:#38536a">한양대학교 ERICA 발전협력처 발전협력팀</b><br>캐릭터 활용 문의: 031-400-4479 · cowkite125@hanyang.ac.kr</div>
-    <div style="text-align:right">HanyangI · HiBibi Character Use · v1.9.0<br>본 페이지의 자동 판정은 1차 안내이며 최종 판단은 발전협력처 발전협력팀의 검토 기준을 따릅니다.</div>
+    <div style="text-align:right">HanyangI · HiBibi Character Use · v2.0.0<br>본 페이지의 자동 판정은 1차 안내이며 최종 판단은 발전협력처 발전협력팀의 검토 기준을 따릅니다.</div>
   </div>
 </footer>
 
@@ -495,8 +495,6 @@
   let turnstileLoadReady = false;
   let turnstileWaiters = [];
 
-  const pendingBackend = new Map();
-  let backendQueue = Promise.resolve();
 
   const labelMap = {
     artType: { official: '공식 PNG 그대로 사용', new: '새롭게 그리거나 변형' },
@@ -513,6 +511,13 @@
     const bytes = new Uint8Array(byteCount);
     window.crypto.getRandomValues(bytes);
     return [...bytes].map(v => v.toString(16).padStart(2, '0')).join('');
+  }
+
+  function createClientRequestId() {
+    const date = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).format(new Date()).replace(/-/g, '');
+    return `HYCHAR-${date}-${randomHex(4).toUpperCase()}`;
   }
 
   function showPage(n) {
@@ -640,9 +645,9 @@
   }
 
   /**
-   * Apps Script 응답 iframe을 직접 읽지 않는다.
-   * POST는 숨은 표준 form으로 안정적으로 전달하고, 서버가 Script Properties에 임시 저장한 처리 결과를
-   * 예측 불가능한 statusToken으로 JSONP 폴링해 실제 성공/실패를 확인한다.
+   * Apps Script POST는 숨은 표준 form으로 전달한다.
+   * 최초 신청번호는 브라우저 Web Crypto로 즉시 생성하므로 서버 응답을 기다리지 않는다.
+   * 최종 상세신청의 성공/실패만 Google Sheet의 처리상태를 JSONP로 확인한다.
    */
   function ensureBackendPostSink() {
     let sink = document.getElementById('backendPostSink');
@@ -659,14 +664,12 @@
     return sink.name;
   }
 
-  /**
-   * Apps Script 웹앱으로의 실제 POST 전달은 브라우저의 CORS/redirect 처리에
-   * 영향을 덜 받는 표준 HTML form POST를 사용한다.
-   * 서버 처리 결과는 이 iframe에서 읽지 않고 statusToken 기반 JSONP 조회로만 확인한다.
-   */
   function submitBackendForm(requestBody) {
     return new Promise((resolve, reject) => {
       try {
+        if (!APPS_SCRIPT_URL.startsWith('https://script.google.com/macros/s/')) {
+          throw new Error('Google Apps Script 웹앱 주소가 설정되지 않았습니다.');
+        }
         const targetName = ensureBackendPostSink();
         const postForm = document.createElement('form');
         postForm.method = 'POST';
@@ -684,8 +687,6 @@
 
         document.body.appendChild(postForm);
         postForm.submit();
-
-        // submit() 호출 시 브라우저가 요청을 넘긴 뒤 폼 엘리먼트는 제거해도 된다.
         window.setTimeout(() => {
           postForm.remove();
           resolve();
@@ -696,60 +697,40 @@
     });
   }
 
-  function postBackendOnce(payload) {
-    if (!APPS_SCRIPT_URL.startsWith('https://script.google.com/macros/s/')) {
-      return Promise.reject(new Error('Google Apps Script 웹앱 주소가 설정되지 않았습니다.'));
-    }
-
-    const statusToken = randomHex(16);
-    const requestBody = JSON.stringify({ ...payload, statusToken });
-
-    return submitBackendForm(requestBody)
-      .then(() => pollBackendResult(statusToken));
-  }
-
-  function postBackend(payload) {
-    const task = () => postBackendOnce(payload);
-    const promise = backendQueue.then(task, task);
-    backendQueue = promise.catch(() => {});
-    return promise;
-  }
-
-  function pollBackendResult(statusToken) {
+  function pollApplicationStatus(id) {
     const deadline = Date.now() + 120000;
-
     return new Promise((resolve, reject) => {
       const attempt = () => {
-        jsonpPoll(statusToken).then(packet => {
+        jsonpApplicationStatus(id).then(packet => {
           if (packet && packet.state === 'done') {
-            resolve(packet.result || { ok: false, code: 'SERVER_ERROR', message: '서버 응답을 확인할 수 없습니다.' });
+            resolve(packet.result || { ok: false, message: '서버 처리 결과를 확인할 수 없습니다.' });
             return;
           }
           if (packet && packet.state === 'rejected') {
-            reject(new Error(packet.message || '서버 응답 확인 요청이 거부되었습니다.'));
+            reject(new Error(packet.message || '접수 상태 확인 요청이 거부되었습니다.'));
             return;
           }
           if (Date.now() >= deadline) {
-            reject(new Error('서버 처리 결과 확인 시간이 초과되었습니다. 실제 접수 여부를 확인한 뒤 다시 시도해 주세요.'));
+            reject(new Error('메일 발송 결과 확인 시간이 초과되었습니다. 실제 접수 여부를 확인한 뒤 다시 시도해 주세요.'));
             return;
           }
-          window.setTimeout(attempt, 900);
+          window.setTimeout(attempt, 1200);
         }).catch(err => {
           if (Date.now() >= deadline) {
-            reject(new Error('서버 처리 결과를 확인하지 못했습니다. 실제 접수 여부를 확인한 뒤 다시 시도해 주세요.'));
+            reject(new Error('메일 발송 결과를 확인하지 못했습니다. 실제 접수 여부를 확인한 뒤 다시 시도해 주세요.'));
             return;
           }
-          console.warn('결과 확인 재시도:', err);
-          window.setTimeout(attempt, 1200);
+          console.warn('접수 상태 확인 재시도:', err);
+          window.setTimeout(attempt, 1500);
         });
       };
       attempt();
     });
   }
 
-  function jsonpPoll(statusToken) {
+  function jsonpApplicationStatus(id) {
     return new Promise((resolve, reject) => {
-      const callbackName = `__hycharPoll_${randomHex(12)}`;
+      const callbackName = `__hycharStatus_${randomHex(12)}`;
       const script = document.createElement('script');
       let settled = false;
 
@@ -763,7 +744,7 @@
 
       const timer = window.setTimeout(() => {
         cleanup();
-        reject(new Error('결과 확인 요청 시간이 초과되었습니다.'));
+        reject(new Error('접수 상태 확인 요청 시간이 초과되었습니다.'));
       }, 15000);
 
       window[callbackName] = data => {
@@ -773,12 +754,12 @@
 
       script.onerror = () => {
         cleanup();
-        reject(new Error('결과 확인 서버에 연결하지 못했습니다.'));
+        reject(new Error('접수 상태 확인 서버에 연결하지 못했습니다.'));
       };
 
       const query = new URLSearchParams({
-        action: 'poll',
-        statusToken,
+        action: 'applicationStatus',
+        requestId: id,
         callback: callbackName,
         _: String(Date.now())
       });
@@ -882,10 +863,7 @@
   }
 
   async function createInitialRecord() {
-    if (initialCreatePending || requestId) {
-      if (initialCreatePending) pendingFlowUpdate = true;
-      return;
-    }
+    if (initialCreatePending || requestId) return;
 
     initialCreatePending = true;
     retryRecordBtn.classList.add('hidden');
@@ -899,48 +877,48 @@
 
     try {
       const token = await waitForTurnstileToken();
-      setRecordStatus('sending', '신청번호를 발급하고 사용 이력을 기록하고 있습니다.', false);
-      const result = await postBackend({
+
+      // 신청번호는 보안 권한값이 아니라 통계/접수 식별자다.
+      // 서버 응답을 기다리지 않고 Web Crypto로 충분히 긴 난수를 사용해 즉시 생성한다.
+      requestId = createClientRequestId();
+      requestToken = randomHex(32);
+      lastLoggedFlowKey = submittedKey;
+      updateRequestIdDisplay();
+      revealResultActions();
+      setRecordStatus('success', '보안 확인이 완료되었습니다. 신청번호를 발급했으며 사용 이력 기록 요청을 전송했습니다.', false);
+
+      await submitBackendForm(JSON.stringify({
         action: 'characterUseCreateLog',
         sessionId,
         flowStartedAt,
         website: document.getElementById('website').value,
         turnstileToken: token,
+        requestId,
+        requestToken,
         ...submittedFlow
-      });
+      }));
+
       resetTurnstile();
-
-      if (!result?.ok) {
-        setRecordStatus('error', result?.message || '사용 이력 기록에 실패했습니다.', true);
-        return;
-      }
-
-      requestId = String(result.requestId || '');
-      requestToken = String(result.requestToken || '');
-      if (!requestId || !requestToken) throw new Error('서버가 신청번호를 반환하지 않았습니다.');
-      applyServerDecision(result.decision);
-      lastLoggedFlowKey = submittedKey;
-      updateRequestIdDisplay();
-
-      if (pendingFlowUpdate || flowKey() !== submittedKey) {
-        pendingFlowUpdate = false;
-        await updateExistingRecord();
-      } else {
-        revealResultActions();
+      if (decision.app) {
+        securityArea.classList.remove('hidden');
+        ensureTurnstileRendered();
+        setRecordStatus('sending', '신청서 전송 시 사용할 새 보안 확인을 준비하고 있습니다.', false);
       }
     } catch (err) {
       console.error(err);
       resetTurnstile();
-      setRecordStatus('error', err.message || '사용 이력 기록 중 오류가 발생했습니다.', true);
+      if (!requestId) {
+        setRecordStatus('error', err.message || '신청번호 생성 중 오류가 발생했습니다.', true);
+      } else {
+        setRecordStatus('error', '신청번호는 발급되었으나 사용 이력 기록 요청을 보내지 못했습니다. 처음부터 다시 진행해 주세요.', false);
+      }
     } finally {
       initialCreatePending = false;
     }
   }
 
   async function updateExistingRecord() {
-    if (!requestId || !requestToken) {
-      return createInitialRecord();
-    }
+    if (!requestId || !requestToken) return createInitialRecord();
 
     const currentFlow = flowPayload();
     const currentKey = flowKey(currentFlow);
@@ -949,30 +927,23 @@
       return;
     }
 
-    applicationArea.classList.add('hidden');
-    pngQuickArea.classList.add('hidden');
-    securityArea.classList.remove('hidden');
-    setRecordStatus('sending', '변경된 선택 내용을 기존 신청번호에 반영하고 있습니다.', false);
+    lastLoggedFlowKey = currentKey;
+    revealResultActions();
+    setRecordStatus('sending', '변경된 선택 내용을 사용 이력에 반영하고 있습니다.', false);
 
     try {
-      const result = await postBackend({
+      await submitBackendForm(JSON.stringify({
         action: 'characterUseUpdateLog',
         sessionId,
         website: document.getElementById('website').value,
         requestId,
         requestToken,
         ...currentFlow
-      });
-      if (!result?.ok) {
-        setRecordStatus('error', result?.message || '사용 이력 수정에 실패했습니다.', false);
-        return;
-      }
-      applyServerDecision(result.decision);
-      lastLoggedFlowKey = currentKey;
-      revealResultActions();
+      }));
+      setRecordStatus('success', '변경된 선택 내용의 기록 요청을 전송했습니다.', false);
     } catch (err) {
       console.error(err);
-      setRecordStatus('error', err.message || '사용 이력 수정 중 오류가 발생했습니다.', false);
+      setRecordStatus('error', '화면의 신청 절차는 계속 진행할 수 있으나 사용 이력 수정 요청을 보내지 못했습니다.', false);
     }
   }
 
@@ -1209,7 +1180,7 @@
       btn.textContent = '전송 중...';
       const files = await Promise.all([...document.getElementById('designFiles').files].map(fileToPayload));
       const currentFlow = flowPayload();
-      const result = await postBackend({
+      await submitBackendForm(JSON.stringify({
         action: 'characterUseApplication',
         sessionId,
         website: document.getElementById('website').value,
@@ -1226,8 +1197,10 @@
         period: document.getElementById('period').value.trim(),
         quantity: document.getElementById('quantity').value.trim(),
         files
-      });
+      }));
       resetTurnstile();
+      setUploadStatus('sending', '서버에서 입력값과 첨부파일을 검증하고 담당자 메일 발송 결과를 확인하고 있습니다.');
+      const result = await pollApplicationStatus(requestId);
 
       if (!result?.ok) {
         setUploadStatus('error', result?.message || '신청 전송에 실패했습니다.');
@@ -1252,7 +1225,7 @@
     }
   });
 
-  // 초기 상태: 결과 페이지의 신청/PNG 영역은 서버에서 신청번호 발급이 성공한 뒤에만 노출합니다.
+  // 초기 상태: Turnstile 확인 후 브라우저에서 신청번호를 즉시 생성한 뒤 신청/PNG 영역을 노출합니다.
   applicationArea.classList.add('hidden');
   pngQuickArea.classList.add('hidden');
 })();
