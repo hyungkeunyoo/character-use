@@ -115,8 +115,10 @@
     .checkline{display:flex;gap:10px;align-items:flex-start;padding:13px 0;color:#42576a;font-size:13px}
     .checkline input{margin-top:4px}
     .wizard-actions{display:flex;justify-content:space-between;gap:10px;margin-top:24px;padding-top:20px;border-top:1px solid #edf1f4}
-    .wizard-toolbar{display:flex;justify-content:flex-end;margin-bottom:16px}
+    .wizard-toolbar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:16px}
     .reset-btn{background:#f3f6f9;color:#526b7f;border:1px solid var(--line);padding:9px 13px;font-size:12px}
+    .prev-btn{background:#fff;color:var(--navy);border:1px solid var(--line);padding:9px 13px;font-size:12px}
+    .prev-btn.hidden{display:none!important}
 
     .result{border-radius:20px;padding:22px;border:1px solid var(--line);margin-bottom:18px}
     .result .status{display:inline-flex;border-radius:999px;padding:6px 10px;font-weight:850;font-size:12px;margin-bottom:10px}
@@ -147,6 +149,19 @@
     .upload-status.success{background:var(--green-bg);color:var(--green);border:1px solid #b9e5d2}
     .upload-status.error{background:var(--red-bg);color:var(--red);border:1px solid #f0c7cb}
     .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+
+    .section-collapse{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 10px 28px rgba(21,48,76,.05);overflow:hidden;padding:0}
+    .section-collapse>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:22px 24px;cursor:pointer;color:#123552}
+    .section-collapse>summary::-webkit-details-marker{display:none}
+    .section-collapse>summary .collapse-title{display:block}
+    .section-collapse>summary h2{font-size:30px;letter-spacing:-.04em;margin:0;color:#123552}
+    .section-collapse>summary p{margin:4px 0 0;color:var(--muted);font-size:14px;font-weight:400}
+    .collapse-icon{width:34px;height:34px;flex:0 0 34px;border-radius:50%;background:#eef4f9;display:grid;place-items:center;color:var(--navy);font-weight:900;transition:transform .2s ease}
+    .section-collapse[open] .collapse-icon{transform:rotate(180deg)}
+    .collapse-body{padding:0 24px 24px}
+    .subsection-head{margin:24px 0 12px}
+    .subsection-head h3{margin:0 0 4px;color:var(--navy);font-size:19px}
+    .subsection-head p{margin:0;color:var(--muted);font-size:13px}
     .resource-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
     .resource{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 10px 28px rgba(21,48,76,.05)}
     .resource h3{margin:0 0 7px;color:var(--navy);font-size:17px}
@@ -220,65 +235,28 @@
     </div>
   </section>
 
-  <div class="wrap quick">
-    <div class="quick-grid">
-      <div class="quick-item"><b>① 기존 PNG 그대로</b><p>색상·형태·비율을 변경하지 않는 기본 활용은 간편 절차로 안내합니다.</p></div>
-      <div class="quick-item"><b>② 새 그림·새 포즈</b><p>직접 제작한 시안이나 매뉴얼에 없는 포즈·소품을 사용하는 경우 시안 검토가 필요합니다.</p></div>
-      <div class="quick-item"><b>③ 판매·수익 목적</b><p>판매·수익 목적의 활용은 일반 승인 절차가 아닌 별도 협의 대상으로 안내합니다.</p></div>
-      <div class="quick-item"><b>④ 색상·비율 변형</b><p>캐릭터의 색상·형태·비율 변경은 금지되어 있으며, 해당 시안은 수정이 필요합니다.</p></div>
-    </div>
-  </div>
-
   <section id="resources">
     <div class="wrap">
-      <div class="section-head"><div><h2>캐릭터 매뉴얼</h2><p>사용 절차를 확인하기 전에 각 캐릭터의 공식 매뉴얼을 먼저 확인해 주세요.</p></div></div>
-      <div class="resource-grid">
-        <article class="resource"><h3>하냥이 캐릭터 매뉴얼</h3><p>색상, 비례, 금지규정, 기본·응용동작 및 활용 예시가 포함되어 있습니다.</p><a class="btn btn-outline btn-block" href="assets/hanyang_manual.pdf" target="_blank" rel="noopener">하냥이 매뉴얼 열기</a></article>
-        <article class="resource"><h3>하이비비 캐릭터 매뉴얼</h3><p>색상, 비례, 금지규정, 표정·동작 및 응용 시스템을 확인할 수 있습니다.</p><a class="btn btn-outline btn-block" href="assets/hibibi_manual.pdf" target="_blank" rel="noopener">하이비비 매뉴얼 열기</a></article>
-      </div>
-      <div class="notice">공식 PNG 파일은 캐릭터 사용 절차를 확인한 뒤, 사용 가능한 범위로 판정된 경우 결과 화면에서 안내됩니다.</div>
-    </div>
-  </section>
-
-  <section id="guide">
-    <div class="wrap">
-      <div class="section-head">
-        <div><h2>사용 기준 안내</h2><p>신청 전 주요 사용 기준을 확인해 주세요.</p></div>
-      </div>
-      <div class="policy-grid">
-        <article class="policy-card">
-          <h3>기본 원칙</h3>
-          <ul>
-            <li>하냥이·하이비비의 색상, 형태, 비율은 임의로 변경할 수 없습니다.</li>
-            <li>매뉴얼에 없는 포즈·표정·소품·새로운 드로잉은 발전협력처 발전협력팀과 사전 협의가 필요합니다.</li>
-            <li>캐릭터를 활용한 제품·굿즈를 제작하는 경우 생산 전에 필요한 승인 절차를 진행해야 합니다.</li>
-          </ul>
-        </article>
-        <article class="policy-card warn">
-          <h3>별도 검토가 필요한 경우</h3>
-          <ul>
-            <li>직접 새로 그린 하냥이·하이비비 시안을 사용하는 경우</li>
-            <li>기존 캐릭터에 새로운 포즈, 소품, 표정 등을 추가하는 경우</li>
-            <li>외부 행사·대외 홍보·제품 제작 등 활용 범위가 큰 경우</li>
-          </ul>
-        </article>
-        <article class="policy-card danger">
-          <h3>일반 승인으로 진행하기 어려운 경우</h3>
-          <ul>
-            <li>개인의 판매·수익 창출 등 상업적 활용</li>
-            <li>캐릭터의 색상·형태·비율을 임의로 바꾸는 활용</li>
-            <li>캐릭터 이미지를 훼손하거나 악의적으로 사용하는 활용</li>
-          </ul>
-        </article>
-        <article class="policy-card">
-          <h3>참고</h3>
-          <ul>
-            <li>교내 과제·학생단체 카드뉴스 등 일부 비영리 활용은 별도 승인 없이 사용할 수 있습니다.</li>
-            <li>기존 공식 PNG를 그대로 사용하는 경우 신규 시안 제작보다 절차가 간소화됩니다.</li>
-            <li>판단이 어려운 경우 결과 화면에서 ‘담당자 검토 필요’로 안내합니다.</li>
-          </ul>
-        </article>
-      </div>
+      <details class="section-collapse">
+        <summary>
+          <span class="collapse-title"><h2>캐릭터 매뉴얼</h2><p>신청 전 하냥이·하이비비 공식 매뉴얼과 주요 활용 기준을 확인해 주세요.</p></span>
+          <span class="collapse-icon" aria-hidden="true">⌄</span>
+        </summary>
+        <div class="collapse-body">
+          <div class="resource-grid">
+            <article class="resource"><h3>하냥이 캐릭터 매뉴얼</h3><p>색상, 비례, 금지규정, 기본·응용동작 및 활용 예시가 포함되어 있습니다.</p><a class="btn btn-outline btn-block" href="assets/hanyang_manual.pdf" target="_blank" rel="noopener">하냥이 매뉴얼 열기</a></article>
+            <article class="resource"><h3>하이비비 캐릭터 매뉴얼</h3><p>색상, 비례, 금지규정, 표정·동작 및 응용 시스템을 확인할 수 있습니다.</p><a class="btn btn-outline btn-block" href="assets/hibibi_manual.pdf" target="_blank" rel="noopener">하이비비 매뉴얼 열기</a></article>
+          </div>
+          <div class="subsection-head"><h3>주요 활용 기준</h3><p>아래 항목은 매뉴얼에서 특히 자주 확인하는 사용 기준입니다.</p></div>
+          <div class="quick-grid">
+            <div class="quick-item"><b>① 기존 PNG 그대로</b><p>색상·형태·비율을 변경하지 않는 기본 활용은 간편 절차로 안내합니다.</p></div>
+            <div class="quick-item"><b>② 새 그림·새 포즈</b><p>직접 제작한 시안이나 매뉴얼에 없는 포즈·소품을 사용하는 경우 시안 검토가 필요합니다.</p></div>
+            <div class="quick-item"><b>③ 판매·수익 목적</b><p>판매·수익 목적의 활용은 일반 승인 절차가 아닌 별도 협의 대상으로 안내합니다.</p></div>
+            <div class="quick-item"><b>④ 색상·비율 변형</b><p>캐릭터의 색상·형태·비율 변경은 금지되어 있으며, 해당 시안은 수정이 필요합니다.</p></div>
+          </div>
+          <div class="notice">공식 PNG 파일은 캐릭터 사용 절차를 확인한 뒤, 사용 가능한 범위로 판정된 경우 결과 화면에서 안내됩니다.</div>
+        </div>
+      </details>
     </div>
   </section>
 
@@ -296,7 +274,10 @@
         </aside>
 
         <div class="panel">
-          <div class="wizard-toolbar"><button type="button" class="btn reset-btn" id="resetWizard">처음부터 다시</button></div>
+          <div class="wizard-toolbar">
+            <button type="button" class="btn prev-btn hidden" id="prevWizard">이전</button>
+            <button type="button" class="btn reset-btn" id="resetWizard">처음부터 다시</button>
+          </div>
           <form id="wizardForm" novalidate>
             <div class="wizard-page active" data-page="1">
               <h3>신청자 유형을 선택해 주세요.</h3>
@@ -387,6 +368,54 @@
     </div>
   </section>
 
+  <section id="guide">
+    <div class="wrap">
+      <details class="section-collapse">
+        <summary>
+          <span class="collapse-title"><h2>사용 기준 안내</h2><p>세부 사용 기준이 필요한 경우 펼쳐서 확인해 주세요.</p></span>
+          <span class="collapse-icon" aria-hidden="true">⌄</span>
+        </summary>
+        <div class="collapse-body">
+          <div class="policy-grid">
+            <article class="policy-card">
+              <h3>기본 원칙</h3>
+              <ul>
+                <li>하냥이·하이비비의 색상, 형태, 비율은 임의로 변경할 수 없습니다.</li>
+                <li>매뉴얼에 없는 포즈·표정·소품·새로운 드로잉은 발전협력처 발전협력팀과 사전 협의가 필요합니다.</li>
+                <li>캐릭터를 활용한 제품·굿즈를 제작하는 경우 생산 전에 필요한 승인 절차를 진행해야 합니다.</li>
+              </ul>
+            </article>
+            <article class="policy-card warn">
+              <h3>별도 검토가 필요한 경우</h3>
+              <ul>
+                <li>직접 새로 그린 하냥이·하이비비 시안을 사용하는 경우</li>
+                <li>기존 캐릭터에 새로운 포즈, 소품, 표정 등을 추가하는 경우</li>
+                <li>외부 행사·대외 홍보·제품 제작 등 활용 범위가 큰 경우</li>
+              </ul>
+            </article>
+            <article class="policy-card danger">
+              <h3>일반 승인으로 진행하기 어려운 경우</h3>
+              <ul>
+                <li>개인의 판매·수익 창출 등 상업적 활용</li>
+                <li>캐릭터의 색상·형태·비율을 임의로 바꾸는 활용</li>
+                <li>캐릭터 이미지를 훼손하거나 악의적으로 사용하는 활용</li>
+              </ul>
+            </article>
+            <article class="policy-card">
+              <h3>참고</h3>
+              <ul>
+                <li>교내 과제·학생단체 카드뉴스 등 일부 비영리 활용은 별도 승인 없이 사용할 수 있습니다.</li>
+                <li>기존 공식 PNG를 그대로 사용하는 경우 신규 시안 제작보다 절차가 간소화됩니다.</li>
+                <li>판단이 어려운 경우 결과 화면에서 ‘담당자 검토 필요’로 안내합니다.</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+
   <section>
     <div class="wrap">
       <div class="section-head"><div><h2>자주 묻는 질문</h2><p>주요 문의 사항을 안내합니다.</p></div></div>
@@ -403,7 +432,7 @@
 <footer>
   <div class="wrap foot">
     <div><b style="color:#38536a">한양대학교 ERICA 발전협력처 발전협력팀</b><br>캐릭터 활용 문의: 031-400-4479 · cowkite125@hanyang.ac.kr</div>
-    <div style="text-align:right">HanyangI · HiBibi Character Use · v1.5<br>본 페이지의 자동 판정은 1차 안내이며 최종 판단은 발전협력처 발전협력팀의 검토 기준을 따릅니다.</div>
+    <div style="text-align:right">HanyangI · HiBibi Character Use · v1.6<br>본 페이지의 자동 판정은 1차 안내이며 최종 판단은 발전협력처 발전협력팀의 검토 기준을 따릅니다.</div>
   </div>
 </footer>
 
@@ -436,6 +465,8 @@
     steps.forEach(s=>{
       const sn=Number(s.dataset.step); s.classList.toggle('active',sn===n); s.classList.toggle('done',sn<n);
     });
+    const prevBtn=document.getElementById('prevWizard');
+    if(prevBtn) prevBtn.classList.toggle('hidden',n<=1);
     document.getElementById('apply').scrollIntoView({behavior:'smooth',block:'start'});
   }
 
@@ -470,16 +501,19 @@
 
   document.getElementById('resetWizard').addEventListener('click',resetWizard);
   document.getElementById('resetWizardBottom').addEventListener('click',resetWizard);
+  document.getElementById('prevWizard').addEventListener('click',()=>{
+    if(current>1) showPage(current-1);
+  });
 
   form.querySelectorAll('input[name="affiliationType"]').forEach(input=>{
-    input.addEventListener('change',()=>setTimeout(()=>showPage(2),160));
+    input.addEventListener('click',()=>setTimeout(()=>showPage(2),160));
   });
 
   function tryAdvanceFromStep2(){
     if(value('artType') && value('modType')) setTimeout(()=>showPage(3),160);
   }
   form.querySelectorAll('input[name="artType"], input[name="modType"]').forEach(input=>{
-    input.addEventListener('change',tryAdvanceFromStep2);
+    input.addEventListener('click',tryAdvanceFromStep2);
   });
 
   function judge(){
@@ -534,7 +568,7 @@
 
   function renderResult(){
     decision=judge(); if(!decision) return;
-    const id=makeId(); form.dataset.requestId=id;
+    const id=form.dataset.requestId || makeId(); form.dataset.requestId=id;
     const box=document.getElementById('resultBox');
     box.innerHTML=`
       <div class="result ${decision.type}">
@@ -557,7 +591,7 @@
     logUseHistory();
   }
   form.querySelectorAll('input[name="purposeType"]').forEach(input=>{
-    input.addEventListener('change',()=>setTimeout(renderResult,160));
+    input.addEventListener('click',()=>setTimeout(renderResult,160));
   });
 
   document.getElementById('designFiles').addEventListener('change',e=>{
