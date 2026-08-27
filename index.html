@@ -457,7 +457,7 @@
 <footer>
   <div class="wrap foot">
     <div><b style="color:#38536a">한양대학교 ERICA 발전협력처 발전협력팀</b><br>캐릭터 활용 문의: 031-400-4479 · cowkite125@hanyang.ac.kr</div>
-    <div style="text-align:right">HanyangI · HiBibi Character Use · v1.8.3<br>본 페이지의 자동 판정은 1차 안내이며 최종 판단은 발전협력처 발전협력팀의 검토 기준을 따릅니다.</div>
+    <div style="text-align:right">HanyangI · HiBibi Character Use · v1.8.4<br>본 페이지의 자동 판정은 1차 안내이며 최종 판단은 발전협력처 발전협력팀의 검토 기준을 따릅니다.</div>
   </div>
 </footer>
 
@@ -640,10 +640,62 @@
   }
 
   /**
-   * Apps Script는 2026년 iframe 임베딩 회귀 이슈 때문에 응답 iframe에 의존하지 않는다.
-   * POST는 no-cors로 전송만 하고, 서버가 CacheService에 저장한 처리 결과를
+   * Apps Script 응답 iframe을 직접 읽지 않는다.
+   * POST는 숨은 표준 form으로 안정적으로 전달하고, 서버가 CacheService에 저장한 처리 결과를
    * 예측 불가능한 statusToken으로 JSONP 폴링해 실제 성공/실패를 확인한다.
    */
+  function ensureBackendPostSink() {
+    let sink = document.getElementById('backendPostSink');
+    if (sink) return sink.name;
+
+    sink = document.createElement('iframe');
+    sink.id = 'backendPostSink';
+    sink.name = 'hycharBackendPostSink';
+    sink.title = '백엔드 전송용 숨김 프레임';
+    sink.setAttribute('aria-hidden', 'true');
+    sink.tabIndex = -1;
+    sink.style.display = 'none';
+    document.body.appendChild(sink);
+    return sink.name;
+  }
+
+  /**
+   * Apps Script 웹앱으로의 실제 POST 전달은 브라우저의 CORS/redirect 처리에
+   * 영향을 덜 받는 표준 HTML form POST를 사용한다.
+   * 서버 처리 결과는 이 iframe에서 읽지 않고 statusToken 기반 JSONP 조회로만 확인한다.
+   */
+  function submitBackendForm(requestBody) {
+    return new Promise((resolve, reject) => {
+      try {
+        const targetName = ensureBackendPostSink();
+        const postForm = document.createElement('form');
+        postForm.method = 'POST';
+        postForm.action = APPS_SCRIPT_URL;
+        postForm.target = targetName;
+        postForm.enctype = 'application/x-www-form-urlencoded';
+        postForm.acceptCharset = 'UTF-8';
+        postForm.style.display = 'none';
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'payload';
+        input.value = requestBody;
+        postForm.appendChild(input);
+
+        document.body.appendChild(postForm);
+        postForm.submit();
+
+        // submit() 호출 시 브라우저가 요청을 넘긴 뒤 폼 엘리먼트는 제거해도 된다.
+        window.setTimeout(() => {
+          postForm.remove();
+          resolve();
+        }, 0);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
   function postBackendOnce(payload) {
     if (!APPS_SCRIPT_URL.startsWith('https://script.google.com/macros/s/')) {
       return Promise.reject(new Error('Google Apps Script 웹앱 주소가 설정되지 않았습니다.'));
@@ -652,14 +704,8 @@
     const statusToken = randomHex(16);
     const requestBody = JSON.stringify({ ...payload, statusToken });
 
-    return fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      cache: 'no-store',
-      redirect: 'follow',
-      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-      body: requestBody
-    }).then(() => pollBackendResult(statusToken));
+    return submitBackendForm(requestBody)
+      .then(() => pollBackendResult(statusToken));
   }
 
   function postBackend(payload) {
