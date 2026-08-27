@@ -148,6 +148,20 @@
     .upload-status.sending{background:#eef6fb;color:#165b86;border:1px solid #cfe2ef}
     .upload-status.success{background:var(--green-bg);color:var(--green);border:1px solid #b9e5d2}
     .upload-status.error{background:var(--red-bg);color:var(--red);border:1px solid #f0c7cb}
+    .security-box{margin:18px 0 22px;padding:18px 20px;border:1px solid #cfe2ef;border-radius:18px;background:#f7fbfe}
+    .security-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
+    .security-head strong{color:#173f5e;font-size:15px}
+    .security-head span{font-size:11px;font-weight:800;color:#4f728d;background:#e8f3fa;border-radius:999px;padding:5px 9px}
+    .security-box>p{margin:0 0 12px;color:#687d8f;font-size:12px}
+    .turnstile-wrap{max-width:420px;min-height:65px}
+    .security-status{margin-top:10px;border-radius:12px;padding:10px 12px;font-size:12px;display:none}
+    .security-status.show{display:block}
+    .security-status.sending{background:#eef6fb;color:#165b86;border:1px solid #cfe2ef}
+    .security-status.success{background:var(--green-bg);color:var(--green);border:1px solid #b9e5d2}
+    .security-status.error{background:var(--red-bg);color:var(--red);border:1px solid #f0c7cb}
+    .retry-row{display:flex;justify-content:flex-end;margin-top:10px}
+    .honeypot-field{position:absolute!important;left:-10000px!important;top:auto!important;width:1px!important;height:1px!important;overflow:hidden!important;opacity:0!important;pointer-events:none!important}
+    .backend-transport{position:fixed!important;left:-10000px!important;bottom:-10000px!important;width:1px!important;height:1px!important;border:0!important;opacity:0!important;pointer-events:none!important;overflow:hidden!important}
     .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
 
     .section-collapse{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 10px 28px rgba(21,48,76,.05);overflow:hidden;padding:0}
@@ -201,8 +215,8 @@
   <div class="wrap topbar-inner">
     <div class="brand"><span class="brand-mark">HY</span><span>하냥이 하이비비 캐릭터 사용</span></div>
     <div class="nav-actions">
-      <a class="btn btn-soft" href="#resources">캐릭터 매뉴얼</a>
       <a class="btn btn-soft" href="#guide">사용 기준</a>
+      <a class="btn btn-soft" href="#resources">캐릭터 매뉴얼</a>
       <a class="btn btn-primary" href="#apply">사용 가능 여부 확인</a>
     </div>
   </div>
@@ -326,6 +340,10 @@
             <button type="button" class="btn reset-btn" id="resetWizard">처음부터 다시</button>
           </div>
           <form id="wizardForm" novalidate>
+            <div class="honeypot-field" aria-hidden="true">
+              <label for="website">Website</label>
+              <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+            </div>
             <div class="wizard-page active" data-page="1">
               <h3>신청자 유형을 선택해 주세요.</h3>
               <p class="desc">신청자 유형은 연락 및 사용 이력 관리를 위해 수집합니다.</p>
@@ -369,6 +387,13 @@
 
             <div class="wizard-page" data-page="4">
               <div id="resultBox"></div>
+              <div id="securityArea" class="security-box hidden">
+                <div class="security-head"><strong>보안 확인</strong><span>자동 요청 방지</span></div>
+                <p>Cloudflare Turnstile을 통해 자동화된 비정상 요청 여부를 확인합니다. 정상 이용자는 별도의 계정 로그인이나 개인정보 입력이 필요하지 않습니다.</p>
+                <div id="turnstileWidget" class="turnstile-wrap"></div>
+                <div id="recordStatus" class="security-status" role="status" aria-live="polite"></div>
+                <div class="retry-row"><button type="button" class="btn btn-outline hidden" id="retryRecordBtn">보안 확인 다시 시도</button></div>
+              </div>
               <div id="pngQuickArea" class="png-quick hidden">
                 <h5>공식 PNG 바로 사용</h5>
                 <p>별도 승인 없이 사용할 수 있는 경우 아래 공식 PNG를 내려받아 매뉴얼의 금지규정을 준수하여 사용해 주세요.</p>
@@ -383,15 +408,15 @@
                 <h3 style="margin-top:18px">신청 정보</h3>
                 <p class="desc">신청 또는 검토가 필요한 경우 아래 정보를 작성해 담당자에게 전달해 주세요.</p>
                 <div class="fields">
-                  <div class="field"><label for="name">이름 *</label><input id="name" name="name" autocomplete="name"></div>
-                  <div class="field"><label for="idNo">학번/사번 *</label><input id="idNo" name="idNo" placeholder="외부인은 '외부' 입력"></div>
-                  <div class="field full"><label for="affiliation">구체적 소속 *</label><input id="affiliation" name="affiliation" placeholder="예: 공학대학 학생회 / ○○사업단 / ○○학과"></div>
-                  <div class="field"><label for="phone">전화번호 *</label><input id="phone" name="phone" type="tel" autocomplete="tel"></div>
-                  <div class="field"><label for="email">메일주소 *</label><input id="email" name="email" type="email" autocomplete="email"></div>
-                  <div class="field full"><label for="purposeDetail">구체적인 활용 목적 *</label><textarea id="purposeDetail" name="purposeDetail" placeholder="제작물, 사용 장소, 사용 기간, 활용 방식 등을 구체적으로 작성해 주세요."></textarea></div>
-                  <div class="field"><label for="period">활용 예정 기간</label><input id="period" name="period" placeholder="예: 2026.09.01 ~ 2026.09.30"></div>
-                  <div class="field"><label for="quantity">제작 수량 / 노출 규모</label><input id="quantity" name="quantity" placeholder="예: 스티커 300매 / 인스타그램 게시물 1건"></div>
-                  <div class="field full hidden" id="fileField"><label for="designFiles">신규 시안 파일</label><input id="designFiles" name="designFiles" type="file" accept="image/*,.pdf" multiple><span class="hint">PNG/JPG/PDF 파일을 최대 5개까지 첨부할 수 있으며, 파일당 5MB·전체 18MB 이하로 준비해 주세요. 제출한 시안 파일은 Google Drive에 별도 저장하지 않으며, 담당자에게 발송되는 신청 메일에 직접 첨부됩니다.</span><div id="filePreview" class="upload-preview"></div><div id="uploadStatus" class="upload-status"></div></div>
+                  <div class="field"><label for="name">이름 *</label><input id="name" name="name" autocomplete="name" required maxlength="50"></div>
+                  <div class="field"><label for="idNo">학번/사번 *</label><input id="idNo" name="idNo" placeholder="외부인은 '외부' 입력" required maxlength="30"></div>
+                  <div class="field full"><label for="affiliation">구체적 소속 *</label><input id="affiliation" name="affiliation" placeholder="예: 공학대학 학생회 / ○○사업단 / ○○학과" required maxlength="120"></div>
+                  <div class="field"><label for="phone">전화번호 *</label><input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required maxlength="30"></div>
+                  <div class="field"><label for="email">메일주소 *</label><input id="email" name="email" type="email" autocomplete="email" required maxlength="160"></div>
+                  <div class="field full"><label for="purposeDetail">구체적인 활용 목적 *</label><textarea id="purposeDetail" name="purposeDetail" placeholder="제작물, 사용 장소, 사용 기간, 활용 방식 등을 구체적으로 작성해 주세요." required maxlength="2000"></textarea></div>
+                  <div class="field"><label for="period">활용 예정 기간</label><input id="period" name="period" placeholder="예: 2026.09.01 ~ 2026.09.30" maxlength="120"></div>
+                  <div class="field"><label for="quantity">제작 수량 / 노출 규모</label><input id="quantity" name="quantity" placeholder="예: 스티커 300매 / 인스타그램 게시물 1건" maxlength="120"></div>
+                  <div class="field full hidden" id="fileField"><label for="designFiles">신규 시안 파일</label><input id="designFiles" name="designFiles" type="file" accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf" multiple><span class="hint">PNG/JPG/PDF 파일을 최대 5개까지 첨부할 수 있으며, 파일당 5MB·전체 18MB 이하로 준비해 주세요. 제출한 시안 파일은 Google Drive에 별도 저장하지 않으며, 담당자에게 발송되는 신청 메일에 직접 첨부됩니다.</span><div id="filePreview" class="upload-preview"></div><div id="uploadStatus" class="upload-status"></div></div>
                 </div>
 
                 <div style="margin-top:16px;border-top:1px solid #edf1f4;padding-top:12px">
@@ -399,7 +424,7 @@
                   <label class="checkline"><input type="checkbox" id="agree2"> <span>매뉴얼에 없는 포즈·표정·소품 또는 새로운 디자인은 필요한 경우 발전협력처 발전협력팀의 사전 검토를 받겠습니다.</span></label>
                   <label class="checkline"><input type="checkbox" id="agree3"> <span>승인받지 않은 디자인·제품 생산 및 상업적 활용을 진행하지 않겠습니다.</span></label>
                 </div>
-                <div class="notice">‘담당자에게 메일 보내기’를 누르면 신청 정보와 첨부 시안이 Google Apps Script를 통해 담당자 메일(cowkite125@hanyang.ac.kr)로 직접 발송됩니다. 첨부 시안은 Google Drive에 별도 보관하지 않으며, 신청번호와 신청 정보만 사용 이력 Google Sheets에 기록됩니다.</div>
+                <div class="notice">‘담당자에게 메일 보내기’를 누르면 서버가 입력값과 첨부파일을 다시 검증한 뒤 담당자 메일(cowkite125@hanyang.ac.kr)로 직접 발송합니다. 실제 메일 발송 성공 여부를 확인한 경우에만 접수 완료로 표시하며, 첨부 시안은 Google Drive에 별도 보관하지 않습니다. 신청번호와 신청 정보만 사용 이력 Google Sheets에 기록됩니다.</div>
                 <div class="wizard-actions">
                   <button type="button" class="btn btn-outline" id="resetWizardBottom">처음부터 다시</button>
                   <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
@@ -432,287 +457,710 @@
 <footer>
   <div class="wrap foot">
     <div><b style="color:#38536a">한양대학교 ERICA 발전협력처 발전협력팀</b><br>캐릭터 활용 문의: 031-400-4479 · cowkite125@hanyang.ac.kr</div>
-    <div style="text-align:right">HanyangI · HiBibi Character Use · v1.7<br>본 페이지의 자동 판정은 1차 안내이며 최종 판단은 발전협력처 발전협력팀의 검토 기준을 따릅니다.</div>
+    <div style="text-align:right">HanyangI · HiBibi Character Use · v1.8<br>본 페이지의 자동 판정은 1차 안내이며 최종 판단은 발전협력처 발전협력팀의 검토 기준을 따릅니다.</div>
   </div>
 </footer>
 
+<form id="backendForm" method="post" target="backendResultFrame" class="backend-transport" aria-hidden="true">
+  <textarea name="payload" id="backendPayload" tabindex="-1"></textarea>
+</form>
+<iframe id="backendResultFrame" name="backendResultFrame" class="backend-transport" title="신청 처리 결과" aria-hidden="true"></iframe>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad" defer></script>
 <script>
 (() => {
-  // Google Apps Script 웹앱 주소
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxdCdx4s-A-sHlY0y-JYu1UaJb0g3RYSwEfogEUr20nlb9_4E3jDKnNJc4aS0zRWTA/exec';
-  const PNG_FOLDER_URL = 'https://drive.google.com/drive/u/0/folders/1YCwNF9r75sfC8ryeXL-ymxbikiQK3CNJ';
-  const MAIL_TO = 'cowkite125@hanyang.ac.kr';
+  const TURNSTILE_SITE_KEY = '0x4AAAAAAEdgK39gKJbuMidT';
   const MAX_FILES = 5;
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
   const MAX_TOTAL_FILE_SIZE = 18 * 1024 * 1024;
+  const TRUSTED_BACKEND_ORIGINS = new Set([
+    'https://script.google.com',
+    'https://script.googleusercontent.com'
+  ]);
 
   const form = document.getElementById('wizardForm');
   const pages = [...document.querySelectorAll('.wizard-page')];
   const steps = [...document.querySelectorAll('.step')];
+  const applicationArea = document.getElementById('applicationArea');
+  const pngQuickArea = document.getElementById('pngQuickArea');
+  const securityArea = document.getElementById('securityArea');
+  const recordStatus = document.getElementById('recordStatus');
+  const retryRecordBtn = document.getElementById('retryRecordBtn');
+  const backendForm = document.getElementById('backendForm');
+  const backendPayload = document.getElementById('backendPayload');
+
   let current = 1;
   let decision = null;
+  let requestId = '';
+  let requestToken = '';
+  let lastLoggedFlowKey = '';
+  let initialCreatePending = false;
+  let pendingFlowUpdate = false;
+  let submissionCompleted = false;
+  let flowStartedAt = Date.now();
+  const sessionId = randomHex(16);
 
-  const value = name => form.querySelector(`[name="${name}"]:checked`)?.value || '';
+  let turnstileWidgetId = null;
+  let turnstileToken = '';
+  let turnstileLoadReady = false;
+  let turnstileWaiters = [];
+
+  const pendingBackend = new Map();
+  let backendQueue = Promise.resolve();
+
   const labelMap = {
-    artType:{official:'공식 PNG 그대로 사용',new:'새롭게 그리거나 변형'},
-    modType:{none:'변형 없음',layout:'문구·배경·레이아웃만 추가',pose:'새 포즈·표정·소품 추가',identity:'색상·형태·비율 변경'},
-    purposeType:{class:'수업·과제·교내 카드뉴스',internal:'교내 홍보·행사 운영',freegoods:'무료 배포 굿즈·기념품',donation:'교내 기부모금 연계 굿즈',commercial:'판매·상업·개인 수익 목적',external:'외부 행사·대외 홍보',other:'기타'}
+    artType: { official: '공식 PNG 그대로 사용', new: '새롭게 그리거나 변형' },
+    modType: { none: '변형 없음', layout: '문구·배경·레이아웃만 추가', pose: '새 포즈·표정·소품 추가', identity: '색상·형태·비율 변경' },
+    purposeType: { class: '수업·과제·교내 카드뉴스', internal: '교내 홍보·행사 운영', freegoods: '무료 배포 굿즈·기념품', donation: '교내 기부모금 연계 굿즈', commercial: '판매·상업·개인 수익 목적', external: '외부 행사·대외 홍보', other: '기타' }
   };
 
-  function showPage(n){
-    current=n;
-    pages.forEach(p=>p.classList.toggle('active', Number(p.dataset.page)===n));
-    steps.forEach(s=>{
-      const sn=Number(s.dataset.step); s.classList.toggle('active',sn===n); s.classList.toggle('done',sn<n);
-    });
-    const prevBtn=document.getElementById('prevWizard');
-    if(prevBtn) prevBtn.classList.toggle('hidden',n<=1);
-    document.getElementById('apply').scrollIntoView({behavior:'smooth',block:'start'});
+  const value = name => form.querySelector(`[name="${name}"]:checked`)?.value || '';
+
+  function randomHex(byteCount) {
+    if (!window.crypto || !window.crypto.getRandomValues) {
+      throw new Error('이 브라우저에서는 안전한 신청 처리를 지원하지 않습니다. 최신 브라우저를 사용해 주세요.');
+    }
+    const bytes = new Uint8Array(byteCount);
+    window.crypto.getRandomValues(bytes);
+    return [...bytes].map(v => v.toString(16).padStart(2, '0')).join('');
   }
 
-  function validPage(n){
-    const page=form.querySelector(`[data-page="${n}"]`);
-    const groups=[...new Set([...page.querySelectorAll('input[type="radio"][required]')].map(x=>x.name))];
-    for(const g of groups){
-      if(!form.querySelector(`[name="${g}"]:checked`)){
-        alert('선택하지 않은 항목이 있습니다. 해당 내용을 먼저 선택해 주세요.'); return false;
-      }
+  function showPage(n) {
+    current = n;
+    pages.forEach(p => p.classList.toggle('active', Number(p.dataset.page) === n));
+    steps.forEach(s => {
+      const sn = Number(s.dataset.step);
+      s.classList.toggle('active', sn === n);
+      s.classList.toggle('done', sn < n);
+    });
+    document.getElementById('prevWizard').classList.toggle('hidden', n <= 1);
+    document.getElementById('apply').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function clearNode(node) {
+    while (node.firstChild) node.removeChild(node.firstChild);
+  }
+
+  function flowPayload() {
+    return {
+      affiliationType: value('affiliationType'),
+      artType: value('artType'),
+      modType: value('modType'),
+      purposeType: value('purposeType')
+    };
+  }
+
+  function flowKey(payload = flowPayload()) {
+    return [payload.affiliationType, payload.artType, payload.modType, payload.purposeType].join('|');
+  }
+
+  function judge() {
+    const art = value('artType');
+    const mod = value('modType');
+    const purpose = value('purposeType');
+    if (!art || !mod || !purpose) return null;
+
+    if (mod === 'identity') {
+      return { type: 'reject', badge: '디자인 수정 필요', title: '현재 시안으로는 승인 절차를 진행할 수 없습니다.', text: '색상·형태·비율의 임의 변경은 캐릭터 금지규정에 해당합니다. 캐릭터 원형을 유지하도록 시안을 수정한 후 다시 확인해 주세요.', app: false, file: false };
     }
+    if (purpose === 'commercial') {
+      return { type: 'reject', badge: '별도 협의 필요', title: '판매·상업 목적의 활용은 별도 협의가 필요합니다.', text: '판매·수익 목적의 활용은 일반 사용 승인 절차가 아닌 별도 협의 대상입니다. 제작·판매 전에 발전협력처 발전협력팀으로 문의해 주세요.', app: true, file: art === 'new' || mod === 'pose' };
+    }
+    if (art === 'new' || mod === 'pose' || purpose === 'external' || purpose === 'donation' || purpose === 'other') {
+      return { type: 'review', badge: '시안 검토 필요', title: '담당자 사전 검토가 필요합니다.', text: '새로운 드로잉·포즈·소품 또는 외부 활용 범위가 포함되어 있습니다. 실제 제작·게시 전에 시안과 신청 정보를 함께 제출해 검토를 받아 주세요.', app: true, file: true };
+    }
+    if (purpose === 'class' && art === 'official' && (mod === 'none' || mod === 'layout')) {
+      return { type: 'ok', badge: '별도 승인 없이 사용 가능', title: '별도 승인 없이 사용할 수 있는 범위입니다.', text: '교내 과제·학생단체 카드뉴스 등 비영리 활용에서 공식 캐릭터 원형을 유지하는 경우에는 별도 사전 승인 없이 사용할 수 있습니다. 아래 공식 PNG를 내려받아 캐릭터 매뉴얼의 금지규정을 준수해 주세요.', app: false, file: false };
+    }
+    return { type: 'neutral', badge: '간편 신청', title: '간편 신청 절차로 진행할 수 있습니다.', text: '공식 PNG를 그대로 사용하고 캐릭터 자체를 변형하지 않는 활용입니다. 아래 신청 정보를 작성해 사용 기록을 제출해 주세요.', app: true, file: false };
+  }
+
+  function renderResultShell() {
+    const box = document.getElementById('resultBox');
+    clearNode(box);
+
+    const result = document.createElement('div');
+    result.className = `result ${decision.type}`;
+
+    const status = document.createElement('span');
+    status.className = 'status';
+    status.textContent = decision.badge;
+    result.appendChild(status);
+
+    const title = document.createElement('h4');
+    title.textContent = decision.title;
+    result.appendChild(title);
+
+    const text = document.createElement('p');
+    text.textContent = decision.text;
+    result.appendChild(text);
+    box.appendChild(result);
+
+    const summary = document.createElement('dl');
+    summary.className = 'summary';
+    appendSummaryRow(summary, '신청번호', requestId || '발급 중...', 'requestIdValue');
+    appendSummaryRow(summary, '신청자 구분', value('affiliationType'));
+    appendSummaryRow(summary, '활용 방식', labelMap.artType[value('artType')] || '');
+    appendSummaryRow(summary, '변형 정도', labelMap.modType[value('modType')] || '');
+    appendSummaryRow(summary, '활용 목적', labelMap.purposeType[value('purposeType')] || '');
+    box.appendChild(summary);
+
+    const note = document.createElement('div');
+    note.className = 'log-note';
+    const strong = document.createElement('b');
+    strong.textContent = '사용 이력 자동 기록';
+    note.appendChild(strong);
+    note.appendChild(document.createTextNode(' · 신청번호와 선택 결과는 하냥이·하이비비 캐릭터 활용 현황 파악을 위해 기록됩니다.'));
+    box.appendChild(note);
+  }
+
+  function appendSummaryRow(dl, label, text, id) {
+    const row = document.createElement('div');
+    row.className = 'summary-row';
+    const dt = document.createElement('dt');
+    dt.textContent = label;
+    const dd = document.createElement('dd');
+    dd.textContent = text;
+    if (id) dd.id = id;
+    row.append(dt, dd);
+    dl.appendChild(row);
+  }
+
+  function updateRequestIdDisplay() {
+    const el = document.getElementById('requestIdValue');
+    if (el) el.textContent = requestId || '발급 중...';
+  }
+
+  function setRecordStatus(type, message, showRetry = false) {
+    recordStatus.className = `security-status show ${type}`;
+    recordStatus.textContent = message;
+    retryRecordBtn.classList.toggle('hidden', !showRetry);
+  }
+
+  function setUploadStatus(type, msg) {
+    const el = document.getElementById('uploadStatus');
+    el.className = `upload-status show ${type}`;
+    el.textContent = msg;
+  }
+
+  function resetUploadStatus() {
+    const el = document.getElementById('uploadStatus');
+    el.className = 'upload-status';
+    el.textContent = '';
+  }
+
+  function trustedBackendOrigin(origin) {
+    return TRUSTED_BACKEND_ORIGINS.has(origin);
+  }
+
+  window.addEventListener('message', event => {
+    if (!trustedBackendOrigin(event.origin)) return;
+    const data = event.data;
+    if (!data || data.type !== 'hychar-backend-response' || typeof data.statusToken !== 'string') return;
+    const pending = pendingBackend.get(data.statusToken);
+    if (!pending) return;
+    pendingBackend.delete(data.statusToken);
+    clearTimeout(pending.timer);
+    pending.resolve(data.result || { ok: false, code: 'SERVER_ERROR', message: '서버 응답을 확인할 수 없습니다.' });
+  });
+
+  function postBackendOnce(payload) {
+    return new Promise((resolve, reject) => {
+      if (!APPS_SCRIPT_URL.startsWith('https://script.google.com/macros/s/')) {
+        reject(new Error('Google Apps Script 웹앱 주소가 설정되지 않았습니다.'));
+        return;
+      }
+
+      const statusToken = randomHex(16);
+      const timer = setTimeout(() => {
+        pendingBackend.delete(statusToken);
+        reject(new Error('서버 응답 시간이 초과되었습니다. 실제 접수 여부를 확인한 뒤 다시 시도해 주세요.'));
+      }, 120000);
+
+      pendingBackend.set(statusToken, { resolve, reject, timer });
+      backendPayload.value = JSON.stringify({ ...payload, statusToken });
+      backendForm.submit();
+      window.setTimeout(() => { backendPayload.value = ''; }, 0);
+    });
+  }
+
+  function postBackend(payload) {
+    const task = () => postBackendOnce(payload);
+    const promise = backendQueue.then(task, task);
+    backendQueue = promise.catch(() => {});
+    return promise;
+  }
+
+  window.onTurnstileLoad = function () {
+    turnstileLoadReady = true;
+    if (current === 4) ensureTurnstileRendered();
+  };
+
+  function isTurnstileConfigured() {
+    return TURNSTILE_SITE_KEY && !TURNSTILE_SITE_KEY.includes('PASTE_YOUR_');
+  }
+
+  function ensureTurnstileRendered() {
+    if (turnstileWidgetId !== null) return true;
+    securityArea.classList.remove('hidden');
+
+    if (!isTurnstileConfigured()) {
+      setRecordStatus('error', 'Cloudflare Turnstile Site Key가 아직 설정되지 않았습니다.', false);
+      return false;
+    }
+    if (!turnstileLoadReady || !window.turnstile) {
+      setRecordStatus('sending', '보안 확인 모듈을 불러오고 있습니다.', false);
+      return false;
+    }
+
+    turnstileWidgetId = window.turnstile.render('#turnstileWidget', {
+      sitekey: TURNSTILE_SITE_KEY,
+      theme: 'light',
+      size: 'flexible',
+      appearance: 'always',
+      action: 'character_use',
+      cData: sessionId,
+      callback: token => {
+        turnstileToken = token;
+        setRecordStatus('success', requestId ? '보안 확인이 완료되었습니다. 신청서를 전송할 수 있습니다.' : '보안 확인이 완료되었습니다. 사용 이력을 기록합니다.', false);
+        const waiters = turnstileWaiters.splice(0);
+        waiters.forEach(w => { clearTimeout(w.timer); w.resolve(token); });
+      },
+      'expired-callback': () => {
+        turnstileToken = '';
+        setRecordStatus('error', '보안 확인이 만료되었습니다. 다시 확인해 주세요.', false);
+      },
+      'timeout-callback': () => {
+        turnstileToken = '';
+        setRecordStatus('error', '보안 확인 시간이 초과되었습니다. 다시 확인해 주세요.', false);
+      },
+      'error-callback': () => {
+        turnstileToken = '';
+        setRecordStatus('error', '보안 확인 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.', false);
+      }
+    });
     return true;
   }
 
-  function resetWizard(){
+  function waitForTurnstileToken() {
+    if (turnstileToken) return Promise.resolve(turnstileToken);
+    ensureTurnstileRendered();
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        turnstileWaiters = turnstileWaiters.filter(w => w.resolve !== resolve);
+        reject(new Error('보안 확인 시간이 초과되었습니다. Turnstile 확인 후 다시 시도해 주세요.'));
+      }, 120000);
+      turnstileWaiters.push({ resolve, reject, timer });
+    });
+  }
+
+  function resetTurnstile() {
+    turnstileToken = '';
+    if (turnstileWidgetId !== null && window.turnstile) {
+      try { window.turnstile.reset(turnstileWidgetId); } catch (_) {}
+    }
+  }
+
+  function applyServerDecision(serverDecision) {
+    if (!serverDecision || serverDecision.badge !== decision.badge) {
+      throw new Error('클라이언트와 서버의 판정 기준이 일치하지 않습니다. 페이지를 새로고침해 주세요.');
+    }
+    decision.type = serverDecision.type;
+    decision.app = !!serverDecision.app;
+    decision.file = !!serverDecision.file;
+  }
+
+  function revealResultActions() {
+    applicationArea.classList.toggle('hidden', !decision.app);
+    document.getElementById('fileField').classList.toggle('hidden', !decision.file);
+    pngQuickArea.classList.toggle('hidden', decision.app || decision.type !== 'ok');
+
+    if (decision.app) {
+      securityArea.classList.remove('hidden');
+      ensureTurnstileRendered();
+      if (!turnstileToken) setRecordStatus('sending', '신청서 전송 시 사용할 새 보안 확인을 준비하고 있습니다.', false);
+    } else {
+      securityArea.classList.add('hidden');
+    }
+  }
+
+  async function createInitialRecord() {
+    if (initialCreatePending || requestId) {
+      if (initialCreatePending) pendingFlowUpdate = true;
+      return;
+    }
+
+    initialCreatePending = true;
+    retryRecordBtn.classList.add('hidden');
+    applicationArea.classList.add('hidden');
+    pngQuickArea.classList.add('hidden');
+    securityArea.classList.remove('hidden');
+    setRecordStatus('sending', '자동 요청 방지를 위한 보안 확인 후 신청번호를 발급합니다.', false);
+
+    const submittedFlow = flowPayload();
+    const submittedKey = flowKey(submittedFlow);
+
+    try {
+      const token = await waitForTurnstileToken();
+      setRecordStatus('sending', '신청번호를 발급하고 사용 이력을 기록하고 있습니다.', false);
+      const result = await postBackend({
+        action: 'characterUseCreateLog',
+        sessionId,
+        flowStartedAt,
+        website: document.getElementById('website').value,
+        turnstileToken: token,
+        ...submittedFlow
+      });
+      resetTurnstile();
+
+      if (!result?.ok) {
+        setRecordStatus('error', result?.message || '사용 이력 기록에 실패했습니다.', true);
+        return;
+      }
+
+      requestId = String(result.requestId || '');
+      requestToken = String(result.requestToken || '');
+      if (!requestId || !requestToken) throw new Error('서버가 신청번호를 반환하지 않았습니다.');
+      applyServerDecision(result.decision);
+      lastLoggedFlowKey = submittedKey;
+      updateRequestIdDisplay();
+
+      if (pendingFlowUpdate || flowKey() !== submittedKey) {
+        pendingFlowUpdate = false;
+        await updateExistingRecord();
+      } else {
+        revealResultActions();
+      }
+    } catch (err) {
+      console.error(err);
+      resetTurnstile();
+      setRecordStatus('error', err.message || '사용 이력 기록 중 오류가 발생했습니다.', true);
+    } finally {
+      initialCreatePending = false;
+    }
+  }
+
+  async function updateExistingRecord() {
+    if (!requestId || !requestToken) {
+      return createInitialRecord();
+    }
+
+    const currentFlow = flowPayload();
+    const currentKey = flowKey(currentFlow);
+    if (currentKey === lastLoggedFlowKey) {
+      revealResultActions();
+      return;
+    }
+
+    applicationArea.classList.add('hidden');
+    pngQuickArea.classList.add('hidden');
+    securityArea.classList.remove('hidden');
+    setRecordStatus('sending', '변경된 선택 내용을 기존 신청번호에 반영하고 있습니다.', false);
+
+    try {
+      const result = await postBackend({
+        action: 'characterUseUpdateLog',
+        sessionId,
+        website: document.getElementById('website').value,
+        requestId,
+        requestToken,
+        ...currentFlow
+      });
+      if (!result?.ok) {
+        setRecordStatus('error', result?.message || '사용 이력 수정에 실패했습니다.', false);
+        return;
+      }
+      applyServerDecision(result.decision);
+      lastLoggedFlowKey = currentKey;
+      revealResultActions();
+    } catch (err) {
+      console.error(err);
+      setRecordStatus('error', err.message || '사용 이력 수정 중 오류가 발생했습니다.', false);
+    }
+  }
+
+  async function renderResult() {
+    decision = judge();
+    if (!decision) return;
+    renderResultShell();
+    applicationArea.classList.add('hidden');
+    pngQuickArea.classList.add('hidden');
+    showPage(4);
+
+    if (requestId && requestToken) {
+      await updateExistingRecord();
+    } else {
+      await createInitialRecord();
+    }
+  }
+
+  function resetWizard() {
     form.reset();
-    decision=null;
-    form.dataset.requestId='';
-    document.getElementById('resultBox').innerHTML='';
-    document.getElementById('pngQuickArea').classList.add('hidden');
-    document.getElementById('applicationArea').classList.remove('hidden');
+    decision = null;
+    requestId = '';
+    requestToken = '';
+    lastLoggedFlowKey = '';
+    initialCreatePending = false;
+    pendingFlowUpdate = false;
+    submissionCompleted = false;
+    flowStartedAt = Date.now();
+    clearNode(document.getElementById('resultBox'));
+    applicationArea.classList.add('hidden');
+    pngQuickArea.classList.add('hidden');
     document.getElementById('fileField').classList.add('hidden');
-    document.getElementById('filePreview').innerHTML='';
-    const uploadStatus=document.getElementById('uploadStatus');
-    uploadStatus.className='upload-status';
-    uploadStatus.textContent='';
-    const mailBtn=document.getElementById('mailBtn');
-    mailBtn.disabled=false;
-    mailBtn.textContent='담당자에게 메일 보내기';
+    clearNode(document.getElementById('filePreview'));
+    resetUploadStatus();
+    retryRecordBtn.classList.add('hidden');
+    securityArea.classList.add('hidden');
+    const mailBtn = document.getElementById('mailBtn');
+    mailBtn.disabled = false;
+    mailBtn.textContent = '담당자에게 메일 보내기';
+    resetTurnstile();
     showPage(1);
   }
 
-  document.getElementById('resetWizard').addEventListener('click',resetWizard);
-  document.getElementById('resetWizardBottom').addEventListener('click',resetWizard);
-  document.getElementById('prevWizard').addEventListener('click',()=>{
-    if(current>1) showPage(current-1);
+  document.getElementById('resetWizard').addEventListener('click', resetWizard);
+  document.getElementById('resetWizardBottom').addEventListener('click', resetWizard);
+  retryRecordBtn.addEventListener('click', createInitialRecord);
+  document.getElementById('prevWizard').addEventListener('click', () => {
+    if (submissionCompleted) {
+      alert('이미 접수가 완료되었습니다. 새 신청은 처음부터 다시 진행해 주세요.');
+      return;
+    }
+    if (current > 1) showPage(current - 1);
   });
 
-  form.querySelectorAll('input[name="affiliationType"]').forEach(input=>{
-    input.addEventListener('click',()=>setTimeout(()=>showPage(2),160));
+  form.querySelectorAll('input[name="affiliationType"]').forEach(input => {
+    input.addEventListener('click', () => setTimeout(() => showPage(2), 160));
   });
 
-  function tryAdvanceFromStep2(){
-    if(value('artType') && value('modType')) setTimeout(()=>showPage(3),160);
+  function tryAdvanceFromStep2() {
+    if (value('artType') && value('modType')) setTimeout(() => showPage(3), 160);
   }
-  form.querySelectorAll('input[name="artType"], input[name="modType"]').forEach(input=>{
-    input.addEventListener('click',tryAdvanceFromStep2);
+
+  form.querySelectorAll('input[name="artType"], input[name="modType"]').forEach(input => {
+    input.addEventListener('click', tryAdvanceFromStep2);
   });
 
-  function judge(){
-    const art=value('artType'), mod=value('modType'), purpose=value('purposeType');
-    if(!art || !mod || !purpose) return null;
-
-    if(mod==='identity'){
-      return {type:'reject', badge:'디자인 수정 필요', title:'현재 시안으로는 승인 절차를 진행할 수 없습니다.', text:'색상·형태·비율의 임의 변경은 캐릭터 금지규정에 해당합니다. 캐릭터 원형을 유지하도록 시안을 수정한 후 다시 확인해 주세요.', app:false, file:true};
-    }
-    if(purpose==='commercial'){
-      return {type:'reject', badge:'별도 협의 필요', title:'판매·상업 목적의 활용은 별도 협의가 필요합니다.', text:'판매·수익 목적의 활용은 일반 사용 승인 절차가 아닌 별도 협의 대상입니다. 제작·판매 전에 발전협력처 발전협력팀으로 문의해 주세요.', app:true, file:art==='new'||mod==='pose'};
-    }
-    if(art==='new' || mod==='pose' || purpose==='external' || purpose==='donation' || purpose==='other'){
-      return {type:'review', badge:'시안 검토 필요', title:'담당자 사전 검토가 필요합니다.', text:'새로운 드로잉·포즈·소품 또는 외부 활용 범위가 포함되어 있습니다. 실제 제작·게시 전에 시안과 신청 정보를 함께 제출해 검토를 받아 주세요.', app:true, file:true};
-    }
-    if(purpose==='class' && art==='official' && (mod==='none'||mod==='layout')){
-      return {type:'ok', badge:'별도 승인 없이 사용 가능', title:'별도 승인 없이 사용할 수 있는 범위입니다.', text:'교내 과제·학생단체 카드뉴스 등 비영리 활용에서 공식 캐릭터 원형을 유지하는 경우에는 별도 사전 승인 없이 사용할 수 있습니다. 아래 공식 PNG를 내려받아 캐릭터 매뉴얼의 금지규정을 준수해 주세요.', app:false, file:false};
-    }
-    return {type:'neutral', badge:'간편 신청', title:'간편 신청 절차로 진행할 수 있습니다.', text:'공식 PNG를 그대로 사용하고 캐릭터 자체를 변형하지 않는 활용입니다. 아래 신청 정보를 작성해 사용 기록을 제출해 주세요.', app:true, file:false};
-  }
-
-  function makeId(){
-    const d=new Date();
-    const y=d.getFullYear(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0');
-    return `HYCHAR-${y}${m}${day}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
-  }
-
-  function logUseHistory(){
-    if(!form.dataset.requestId || !decision) return;
-    const payload={
-      action:'characterUseLog',
-      requestId:form.dataset.requestId,
-      decision:decision.badge||'',
-      affiliationType:value('affiliationType'),
-      artType:labelMap.artType[value('artType')]||'',
-      modType:labelMap.modType[value('modType')]||'',
-      purposeType:labelMap.purposeType[value('purposeType')]||''
-    };
-    try{
-      fetch(APPS_SCRIPT_URL,{
-        method:'POST',
-        mode:'no-cors',
-        cache:'no-store',
-        keepalive:true,
-        headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body:JSON.stringify(payload)
-      }).catch(err=>console.warn('사용 이력 기록 실패',err));
-    }catch(err){
-      console.warn('사용 이력 기록 실패',err);
-    }
-  }
-
-  function renderResult(){
-    decision=judge(); if(!decision) return;
-    const id=form.dataset.requestId || makeId(); form.dataset.requestId=id;
-    const box=document.getElementById('resultBox');
-    box.innerHTML=`
-      <div class="result ${decision.type}">
-        <span class="status">${decision.badge}</span>
-        <h4>${decision.title}</h4>
-        <p>${decision.text}</p>
-      </div>
-      <dl class="summary">
-        <div class="summary-row"><dt>신청번호</dt><dd>${id}</dd></div>
-        <div class="summary-row"><dt>신청자 구분</dt><dd>${value('affiliationType')}</dd></div>
-        <div class="summary-row"><dt>활용 방식</dt><dd>${labelMap.artType[value('artType')]}</dd></div>
-        <div class="summary-row"><dt>변형 정도</dt><dd>${labelMap.modType[value('modType')]}</dd></div>
-        <div class="summary-row"><dt>활용 목적</dt><dd>${labelMap.purposeType[value('purposeType')]}</dd></div>
-      </dl>
-      <div class="log-note"><b>사용 이력 자동 기록</b> · 위 신청번호와 선택 결과는 하냥이·하이비비 캐릭터 활용 현황 파악을 위해 자동 기록됩니다.</div>`;
-    document.getElementById('applicationArea').classList.toggle('hidden', !decision.app);
-    document.getElementById('fileField').classList.toggle('hidden', !decision.file);
-    document.getElementById('pngQuickArea').classList.toggle('hidden', decision.app || decision.type!=='ok');
-    showPage(4);
-    logUseHistory();
-  }
-  form.querySelectorAll('input[name="purposeType"]').forEach(input=>{
-    input.addEventListener('click',()=>setTimeout(renderResult,160));
+  form.querySelectorAll('input[name="purposeType"]').forEach(input => {
+    input.addEventListener('click', () => setTimeout(() => { renderResult(); }, 160));
   });
 
-  document.getElementById('designFiles').addEventListener('change',e=>{
-    const files=[...e.target.files];
-    if(files.length>MAX_FILES){
+  function fileExtension(name) {
+    const dot = String(name || '').lastIndexOf('.');
+    return dot >= 0 ? String(name).slice(dot + 1).toLowerCase() : '';
+  }
+
+  function allowedClientFile(file) {
+    const ext = fileExtension(file.name);
+    if (file.type === 'image/png') return ext === 'png';
+    if (file.type === 'image/jpeg') return ext === 'jpg' || ext === 'jpeg';
+    if (file.type === 'application/pdf') return ext === 'pdf';
+    return false;
+  }
+
+  document.getElementById('designFiles').addEventListener('change', e => {
+    const files = [...e.target.files];
+    const preview = document.getElementById('filePreview');
+    clearNode(preview);
+
+    if (files.length > MAX_FILES) {
       alert(`첨부 파일은 최대 ${MAX_FILES}개까지 선택할 수 있습니다.`);
-      e.target.value='';
-      document.getElementById('filePreview').innerHTML='';
+      e.target.value = '';
       return;
     }
-    const tooLarge=files.find(f=>f.size>MAX_FILE_SIZE);
-    if(tooLarge){
+    const disallowed = files.find(f => !allowedClientFile(f));
+    if (disallowed) {
+      alert(`${disallowed.name} 파일은 허용되지 않습니다. PNG, JPG/JPEG, PDF만 첨부할 수 있습니다.`);
+      e.target.value = '';
+      return;
+    }
+    const tooLarge = files.find(f => f.size > MAX_FILE_SIZE);
+    if (tooLarge) {
       alert(`${tooLarge.name} 파일이 5MB를 초과합니다. 파일당 5MB 이하로 준비해 주세요.`);
-      e.target.value='';
-      document.getElementById('filePreview').innerHTML='';
+      e.target.value = '';
       return;
     }
-    const totalSize=files.reduce((sum,f)=>sum+f.size,0);
-    if(totalSize>MAX_TOTAL_FILE_SIZE){
+    const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+    if (totalSize > MAX_TOTAL_FILE_SIZE) {
       alert('첨부 파일 전체 용량은 18MB 이하로 준비해 주세요.');
-      e.target.value='';
-      document.getElementById('filePreview').innerHTML='';
+      e.target.value = '';
       return;
     }
-    const out=document.getElementById('filePreview'); out.innerHTML='';
-    files.forEach(f=>{const div=document.createElement('div');div.className='file-pill';div.textContent=`${f.name} · ${(f.size/1024/1024).toFixed(2)} MB`;out.appendChild(div)});
+    files.forEach(f => {
+      const div = document.createElement('div');
+      div.className = 'file-pill';
+      div.textContent = `${f.name} · ${(f.size / 1024 / 1024).toFixed(2)} MB`;
+      preview.appendChild(div);
+    });
   });
 
-  function validateApplication(){
-    const req=['name','idNo','affiliation','phone','email','purposeDetail'];
-    for(const id of req){const el=document.getElementById(id);if(!el.value.trim()){alert(`${el.previousElementSibling?.textContent||'필수 항목'}을 입력해 주세요.`);el.focus();return false}}
-    if(!document.getElementById('email').value.includes('@')){alert('메일주소 형식을 확인해 주세요.');return false}
-    if(!['agree1','agree2','agree3'].every(id=>document.getElementById(id).checked)){alert('캐릭터 사용 유의사항 3개 항목에 모두 동의해야 신청할 수 있습니다.');return false}
-    if(decision?.file && document.getElementById('designFiles').files.length===0){
+  function validateApplication() {
+    if (!requestId || !requestToken) {
+      alert('신청번호 발급이 완료되지 않았습니다. 보안 확인 후 다시 시도해 주세요.');
+      return false;
+    }
+    const required = [
+      ['name', 50], ['idNo', 30], ['affiliation', 120], ['phone', 30], ['email', 160], ['purposeDetail', 2000]
+    ];
+    for (const [id, max] of required) {
+      const el = document.getElementById(id);
+      const text = el.value.trim();
+      if (!text) {
+        alert(`${el.previousElementSibling?.textContent || '필수 항목'}을 입력해 주세요.`);
+        el.focus();
+        return false;
+      }
+      if (text.length > max) {
+        alert(`${el.previousElementSibling?.textContent || '입력 항목'}은 ${max}자 이하로 입력해 주세요.`);
+        el.focus();
+        return false;
+      }
+    }
+
+    const email = document.getElementById('email').value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+      alert('메일주소 형식을 확인해 주세요.');
+      return false;
+    }
+
+    const phone = document.getElementById('phone').value.trim();
+    if (!/^[0-9+\-().\s]{7,30}$/.test(phone)) {
+      alert('전화번호 형식을 확인해 주세요.');
+      return false;
+    }
+
+    if (document.getElementById('period').value.trim().length > 120 || document.getElementById('quantity').value.trim().length > 120) {
+      alert('활용 예정 기간과 제작 수량/노출 규모는 각각 120자 이하로 입력해 주세요.');
+      return false;
+    }
+
+    if (!['agree1', 'agree2', 'agree3'].every(id => document.getElementById(id).checked)) {
+      alert('캐릭터 사용 유의사항 3개 항목에 모두 동의해야 신청할 수 있습니다.');
+      return false;
+    }
+
+    const files = [...document.getElementById('designFiles').files];
+    if (decision?.file && files.length === 0) {
       alert('담당자 사전 검토 대상은 신규 시안 파일을 반드시 첨부해야 합니다.');
+      return false;
+    }
+    if (files.length > MAX_FILES || files.some(f => !allowedClientFile(f)) || files.some(f => f.size > MAX_FILE_SIZE) || files.reduce((s, f) => s + f.size, 0) > MAX_TOTAL_FILE_SIZE) {
+      alert('첨부 파일 조건을 다시 확인해 주세요. PNG/JPG/PDF, 최대 5개, 파일당 5MB, 전체 18MB 이하만 가능합니다.');
       return false;
     }
     return true;
   }
 
-  function buildText(){
-    const files=[...document.getElementById('designFiles').files].map(f=>f.name).join(', ') || '없음';
-    return `[하냥이·하이비비 캐릭터 사용 신청]\n\n신청번호: ${form.dataset.requestId}\n1차 판정: ${decision?.badge||''}\n신청자 구분: ${value('affiliationType')}\n활용 방식: ${labelMap.artType[value('artType')]}\n변형 정도: ${labelMap.modType[value('modType')]}\n활용 목적: ${labelMap.purposeType[value('purposeType')]}\n\n이름: ${document.getElementById('name').value}\n학번/사번: ${document.getElementById('idNo').value}\n구체적 소속: ${document.getElementById('affiliation').value}\n전화번호: ${document.getElementById('phone').value}\n메일주소: ${document.getElementById('email').value}\n활용 예정 기간: ${document.getElementById('period').value || '-'}\n제작 수량/노출 규모: ${document.getElementById('quantity').value || '-'}\n시안 파일명: ${files}\n\n[구체적 활용 목적]\n${document.getElementById('purposeDetail').value}\n\n[확인사항]\n- 캐릭터 색상·형태·비율 임의 변경 금지 확인\n- 신규 포즈·표정·소품·디자인 사전 검토 확인\n- 승인받지 않은 제품 생산 및 상업적 활용 금지 확인`;
+  function buildText() {
+    const files = [...document.getElementById('designFiles').files].map(f => f.name).join(', ') || '없음';
+    return `[하냥이·하이비비 캐릭터 사용 신청]\n\n신청번호: ${requestId}\n1차 판정: ${decision?.badge || ''}\n신청자 구분: ${value('affiliationType')}\n활용 방식: ${labelMap.artType[value('artType')]}\n변형 정도: ${labelMap.modType[value('modType')]}\n활용 목적: ${labelMap.purposeType[value('purposeType')]}\n\n이름: ${document.getElementById('name').value}\n학번/사번: ${document.getElementById('idNo').value}\n구체적 소속: ${document.getElementById('affiliation').value}\n전화번호: ${document.getElementById('phone').value}\n메일주소: ${document.getElementById('email').value}\n활용 예정 기간: ${document.getElementById('period').value || '-'}\n제작 수량/노출 규모: ${document.getElementById('quantity').value || '-'}\n시안 파일명: ${files}\n\n[구체적 활용 목적]\n${document.getElementById('purposeDetail').value}\n\n[확인사항]\n- 캐릭터 색상·형태·비율 임의 변경 금지 확인\n- 신규 포즈·표정·소품·디자인 사전 검토 확인\n- 승인받지 않은 제품 생산 및 상업적 활용 금지 확인`;
   }
 
-  async function fileToPayload(file){
-    return new Promise((resolve,reject)=>{
-      const reader=new FileReader();
-      reader.onload=()=>{
-        const result=String(reader.result||'');
-        const base64=result.includes(',')?result.split(',')[1]:result;
-        resolve({name:file.name,type:file.type||'application/octet-stream',size:file.size,data:base64});
+  async function fileToPayload(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = String(reader.result || '');
+        const comma = result.indexOf(',');
+        if (comma < 0) {
+          reject(new Error(`${file.name} 파일을 읽을 수 없습니다.`));
+          return;
+        }
+        resolve({
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          data: result.slice(comma + 1)
+        });
       };
-      reader.onerror=()=>reject(new Error(`${file.name} 파일을 읽을 수 없습니다.`));
+      reader.onerror = () => reject(new Error(`${file.name} 파일을 읽을 수 없습니다.`));
       reader.readAsDataURL(file);
     });
   }
 
-  function setUploadStatus(type,msg){
-    const el=document.getElementById('uploadStatus');
-    el.className=`upload-status show ${type}`;
-    el.textContent=msg;
+  function clearSensitiveFieldsAfterSuccess() {
+    ['name', 'idNo', 'affiliation', 'phone', 'email', 'purposeDetail', 'period', 'quantity'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    ['agree1', 'agree2', 'agree3'].forEach(id => { document.getElementById(id).checked = false; });
+    document.getElementById('designFiles').value = '';
+    document.getElementById('website').value = '';
+    clearNode(document.getElementById('filePreview'));
   }
 
-  document.getElementById('copyBtn').addEventListener('click',async()=>{
-    if(!validateApplication())return;
-    try{await navigator.clipboard.writeText(buildText());alert('신청 내용을 클립보드에 복사했습니다.')}catch{alert('브라우저에서 자동 복사가 제한되었습니다.')}
+  document.getElementById('copyBtn').addEventListener('click', async () => {
+    if (!validateApplication()) return;
+    try {
+      await navigator.clipboard.writeText(buildText());
+      alert('신청 내용을 클립보드에 복사했습니다.');
+    } catch (_) {
+      alert('브라우저에서 자동 복사가 제한되었습니다.');
+    }
   });
 
-  document.getElementById('mailBtn').addEventListener('click',async()=>{
-    if(!validateApplication())return;
-    if(!APPS_SCRIPT_URL.startsWith('https://script.google.com/macros/s/')){
-      alert('Google Apps Script 웹앱 주소가 아직 설정되지 않았습니다. index.html의 APPS_SCRIPT_URL 값을 먼저 입력해 주세요.');
-      return;
-    }
+  document.getElementById('mailBtn').addEventListener('click', async () => {
+    if (!validateApplication()) return;
 
-    const btn=document.getElementById('mailBtn');
-    btn.disabled=true;
-    btn.textContent='전송 중...';
-    setUploadStatus('sending','신청 정보와 첨부 파일을 전송하고 있습니다. 창을 닫지 마세요.');
+    const btn = document.getElementById('mailBtn');
+    btn.disabled = true;
+    btn.textContent = '보안 확인 중...';
+    setUploadStatus('sending', '보안 확인 후 신청 정보와 첨부 파일을 전송합니다. 창을 닫지 마세요.');
 
-    try{
-      const files=await Promise.all([...document.getElementById('designFiles').files].map(fileToPayload));
-      const payload={
-        action:'characterUseApplication',
-        requestId:form.dataset.requestId,
-        decision:decision?.badge||'',
-        affiliationType:value('affiliationType'),
-        artType:labelMap.artType[value('artType')],
-        modType:labelMap.modType[value('modType')],
-        purposeType:labelMap.purposeType[value('purposeType')],
-        name:document.getElementById('name').value.trim(),
-        idNo:document.getElementById('idNo').value.trim(),
-        affiliation:document.getElementById('affiliation').value.trim(),
-        phone:document.getElementById('phone').value.trim(),
-        email:document.getElementById('email').value.trim(),
-        purposeDetail:document.getElementById('purposeDetail').value.trim(),
-        period:document.getElementById('period').value.trim(),
-        quantity:document.getElementById('quantity').value.trim(),
+    try {
+      const token = await waitForTurnstileToken();
+      btn.textContent = '전송 중...';
+      const files = await Promise.all([...document.getElementById('designFiles').files].map(fileToPayload));
+      const currentFlow = flowPayload();
+      const result = await postBackend({
+        action: 'characterUseApplication',
+        sessionId,
+        website: document.getElementById('website').value,
+        turnstileToken: token,
+        requestId,
+        requestToken,
+        ...currentFlow,
+        name: document.getElementById('name').value.trim(),
+        idNo: document.getElementById('idNo').value.trim(),
+        affiliation: document.getElementById('affiliation').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        purposeDetail: document.getElementById('purposeDetail').value.trim(),
+        period: document.getElementById('period').value.trim(),
+        quantity: document.getElementById('quantity').value.trim(),
         files
-      };
-
-      await fetch(APPS_SCRIPT_URL,{
-        method:'POST',
-        mode:'no-cors',
-        cache:'no-store',
-        headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body:JSON.stringify(payload)
       });
+      resetTurnstile();
 
-      setUploadStatus('success',`전송 요청을 완료했습니다. 신청 내용과 첨부 파일이 ${MAIL_TO}로 발송됩니다. 첨부 파일은 Google Drive에 별도 저장되지 않습니다.`);
-      btn.textContent='전송 완료';
-      alert('신청이 전송되었습니다. 담당자가 확인 후 필요한 경우 연락드립니다.');
-    }catch(err){
+      if (!result?.ok) {
+        setUploadStatus('error', result?.message || '신청 전송에 실패했습니다.');
+        btn.disabled = false;
+        btn.textContent = '담당자에게 메일 보내기';
+        return;
+      }
+
+      submissionCompleted = true;
+      requestToken = '';
+      clearSensitiveFieldsAfterSuccess();
+      setUploadStatus('success', `신청번호 ${result.requestId || requestId}로 정상 접수되었습니다. 담당자 메일 발송 성공 여부까지 서버에서 확인했습니다.`);
+      btn.textContent = '접수 완료';
+      securityArea.classList.add('hidden');
+      alert('신청이 정상적으로 접수되었습니다. 담당자가 확인 후 필요한 경우 연락드립니다.');
+    } catch (err) {
       console.error(err);
-      setUploadStatus('error','전송 과정에서 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
-      btn.disabled=false;
-      btn.textContent='담당자에게 메일 보내기';
+      resetTurnstile();
+      setUploadStatus('error', err.message || '전송 과정에서 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+      btn.disabled = false;
+      btn.textContent = '담당자에게 메일 보내기';
     }
   });
+
+  // 초기 상태: 결과 페이지의 신청/PNG 영역은 서버에서 신청번호 발급이 성공한 뒤에만 노출합니다.
+  applicationArea.classList.add('hidden');
+  pngQuickArea.classList.add('hidden');
+  backendForm.action = APPS_SCRIPT_URL;
 })();
+
 </script>
 </body>
 </html>
