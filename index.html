@@ -457,7 +457,7 @@
 <footer>
   <div class="wrap foot">
     <div><b style="color:#38536a">한양대학교 ERICA 발전협력처 발전협력팀</b><br>캐릭터 활용 문의: 031-400-4479 · cowkite125@hanyang.ac.kr</div>
-    <div style="text-align:right">HanyangI · HiBibi Character Use · v1.8.1<br>본 페이지의 자동 판정은 1차 안내이며 최종 판단은 발전협력처 발전협력팀의 검토 기준을 따릅니다.</div>
+    <div style="text-align:right">HanyangI · HiBibi Character Use · v1.8.2<br>본 페이지의 자동 판정은 1차 안내이며 최종 판단은 발전협력처 발전협력팀의 검토 기준을 따릅니다.</div>
   </div>
 </footer>
 
@@ -488,6 +488,7 @@
   const retryRecordBtn = document.getElementById('retryRecordBtn');
   const backendForm = document.getElementById('backendForm');
   const backendPayload = document.getElementById('backendPayload');
+  const backendFrame = document.getElementById('backendResultFrame');
 
   let current = 1;
   let decision = null;
@@ -650,10 +651,21 @@
   }
 
   function trustedBackendOrigin(origin) {
-    return TRUSTED_BACKEND_ORIGINS.has(origin);
+    try {
+      const url = new URL(origin);
+      if (url.protocol !== 'https:') return false;
+      const host = url.hostname.toLowerCase();
+      return host === 'script.google.com' ||
+             host === 'script.googleusercontent.com' ||
+             host.endsWith('-script.googleusercontent.com');
+    } catch (_) {
+      return false;
+    }
   }
 
   window.addEventListener('message', event => {
+    // 응답은 우리가 만든 숨은 Apps Script 결과 iframe에서 온 것만 허용한다.
+    if (!backendFrame || event.source !== backendFrame.contentWindow) return;
     if (!trustedBackendOrigin(event.origin)) return;
     const data = event.data;
     if (!data || data.type !== 'hychar-backend-response' || typeof data.statusToken !== 'string') return;
